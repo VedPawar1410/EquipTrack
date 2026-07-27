@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app          # live code sync — edit locally, container sees it instantly
+    environment:
+      DATABASE_URL: postgresql://equiptrack:devpassword@postgres:5432/equiptrack
+    depends_on:
+      - postgres
+
+      
+  postgres:
+    image: postgres:16
+    container_name: equiptrack-db
+    environment:
+      POSTGRES_USER: equiptrack
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: equiptrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
