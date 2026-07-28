@@ -225,4 +225,61 @@
             </column>
         </addColumn>
     </changeSet>
+
+
+    <changeSet id="fix_status_value_casing" author="ved">
+        <comment>Normalize status column to enum .value strings (name vs value bug)</comment>
+        <sql>
+            UPDATE equipment SET status = CASE status
+                WHEN 'ACTIVE' THEN 'active'
+                WHEN 'UNDER_MAINTENANCE' THEN 'under maintenance'
+                WHEN 'RETIRED' THEN 'retired'
+                ELSE status
+            END;
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="fix_equipment_type_value_casing" author="ved">
+        <comment>Normalize equipment_type column to enum .value strings (name vs value bug)</comment>
+        <sql>
+            UPDATE equipment SET equipment_type = CASE  equipment_type
+                WHEN 'STAMPING_PRESS' THEN 'Stamping Press'
+                WHEN 'COIL_LINE' THEN 'Coil Line'
+                WHEN 'WELDING_ROBOT' THEN 'Welding Robot'
+                WHEN 'SPOT_WELDER' THEN 'Spot Welder'
+                WHEN 'ROBOTIC_ARM' THEN 'Robotic Arm'
+                WHEN 'PAINT_ROBOT' THEN 'Paint Robot'
+                WHEN 'PAINT_BOOTH' THEN 'Paint Booth'
+                WHEN 'ECOAT_SYSTEM' THEN 'E-Coat System'
+                WHEN 'CURING_OVEN' THEN 'Curing Oven'
+                WHEN 'CNC_MACHINE' THEN 'CNC Machine'
+                WHEN 'HONING_MACHINE' THEN 'Honing Machine'
+                WHEN 'GRINDER' THEN 'Grinder'
+                WHEN 'DRILL_PRESS' THEN 'Drill Press'
+                WHEN 'LASER_CUTTER' THEN 'Laser Cutter'
+                WHEN 'PLASMA_CUTTER' THEN 'Plasma Cutter'
+                WHEN 'WATERJET_CUTTER' THEN 'Waterjet Cutter'
+                WHEN 'CONVEYOR' THEN 'Conveyor'
+                WHEN 'ASSEMBLY_ROBOT' THEN 'Assembly Robot'
+                WHEN 'TORQUE_TOOL_STATION' THEN 'Torque Tool Station'
+                WHEN 'AGV' THEN 'Automated Guided Vehicle'
+                WHEN 'MEASURING' THEN 'Measuring Equipment'
+                WHEN 'VISION_SYSTEM' THEN 'Vision System'
+                WHEN 'TEST_STAND' THEN 'Test Stand'
+                WHEN 'DYNAMOMETER' THEN 'Dynamometer'
+                WHEN 'FORKLIFT' THEN 'Forklift'
+                WHEN 'OVERHEAD_CRANE' THEN 'Overhead Crane'
+                WHEN 'HYDRAULIC_LIFT' THEN 'Hydraulic Lift'
+                WHEN 'PALLETIZER' THEN 'Palletizer'
+                WHEN 'AIR_COMPRESSOR' THEN 'Air Compressor'
+                WHEN 'BOILER' THEN 'Boiler'
+                WHEN 'HVAC_UNIT' THEN 'HVAC Unit'
+                WHEN 'GENERATOR' THEN 'Generator'
+                WHEN 'WATER_TREATMENT_SYSTEM' THEN 'Water   Treatment System'
+                ELSE equipment_type
+            END;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
