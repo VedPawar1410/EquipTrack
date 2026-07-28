@@ -1,4 +1,4 @@
-
+from uuid import UUID
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
@@ -6,6 +6,10 @@ from models.equipment_models import EquipmentIn, EquipmentOut, EquipmentTable
 from fastapi import APIRouter
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
+from typing import List
+from sqlmodel import select
+from models.equipment_models import STATUS, EquipmentType
+from typing import Optional
 
 # 1. Create a router instead of using 'app'
 router = APIRouter()
@@ -35,3 +39,46 @@ async def create_equipment(equipment: EquipmentIn, db: AsyncSession = Depends(ge
     return new_equipment
     
 
+@router.get("/equipment", response_model=List[EquipmentOut], status_code=200)
+async def get_equipments(
+    db: AsyncSession = Depends(get_db), 
+    status: Optional[STATUS] = None, 
+    department: str | None = None,
+    type: Optional[EquipmentType] = None,
+    search: Optional[str] | None = None
+):
+    statement = select(EquipmentTable)
+
+    if status is not None:
+        statement = statement.where(EquipmentTable.status == status)
+
+    if department is not None:
+        statement = statement.where(EquipmentTable.department == department)
+
+    if type is not None:
+        statement = statement.where(EquipmentTable.equipment_type == type)
+
+    if search is not None:
+        statement = statement.where(EquipmentTable.name.contains(search)) # type: ignore
+
+
+    result = await db.execute(statement)
+    equipments = result.scalars().all()
+
+    if not equipments:
+        raise HTTPException(status_code=404, detail="No equipment found")
+
+    return equipments
+
+
+
+@router.get("/equipment/{id}", response_model=EquipmentOut, status_code=200)
+async def get_equipment_by_id(
+    id: UUID,
+    db: AsyncSession = Depends(get_db), 
+):
+    equipment = await db.get(EquipmentTable, id)
+
+    if not equipment:
+        raise HTTPException(status_code=404, detail="Equipment not found")    
+    return equipment
