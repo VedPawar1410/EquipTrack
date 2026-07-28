@@ -8,3 +8,6 @@ __pycache__/
 
 
 # EquipTrack_Capstone_Project_Spec.md
+
+/models/issue_models.py
+/models/maintainance_models.py
