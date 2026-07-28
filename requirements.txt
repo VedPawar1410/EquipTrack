@@ -3,3 +3,11 @@ uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 python-dotenv
+asyncio
+sqlmodel
+pydantic
+pytest
+pytest-asyncio
+requests
+asyncpg
+pydantic-settings
