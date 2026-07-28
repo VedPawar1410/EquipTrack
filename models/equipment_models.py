@@ -57,6 +57,12 @@ class EquipmentType(str, Enum):
     GENERATOR = "Generator"
     WATER_TREATMENT_SYSTEM = "Water Treatment System"
 
+
+class STATUS(str, Enum):
+    ACTIVE = "active"
+    UNDER_MAINTENANCE = "under maintenance"
+    RETIRED = "retired"
+
 class SharedEquipment(SQLModel):
     name: str
     model_number: str | None = None
@@ -64,7 +70,8 @@ class SharedEquipment(SQLModel):
     # This keeps validation in Python, but saves as standard VARCHAR in Postgres
     # https://share.google/aimode/5s3vd8NgXmbcTjTVj
     equipment_type: EquipmentType = Field(
-        sa_type=SAEnum(EquipmentType, native_enum=False, create_type=False) # type: ignore
+        sa_type=SAEnum(EquipmentType, native_enum=False, create_type=False, 
+        values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
     )
     location: str
     department: str
@@ -94,12 +101,21 @@ class EquipmentIn(SharedEquipment):
 
 class EquipmentOut(SharedEquipment):
     id: UUID
-    status: str = "active"
+    status: STATUS = Field(default=STATUS.ACTIVE,
+        sa_type=SAEnum(STATUS, native_enum=False, create_type=False) # type: ignore
+    )
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
 class EquipmentTable(SharedEquipment, table=True):
     __tablename__ = "equipment" # type: ignore
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+    status: STATUS = Field(
+        default=STATUS.ACTIVE,
+        sa_type=SAEnum(STATUS, native_enum=False, create_type=False,
+        values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
+    )
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
     
 
