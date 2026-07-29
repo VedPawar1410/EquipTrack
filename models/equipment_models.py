@@ -4,6 +4,8 @@ from uuid import UUID, uuid4
 from sqlmodel import Field
 from enum import Enum
 from sqlalchemy import Enum as SAEnum
+from typing import List
+from sqlmodel import Relationship
 
 
 #enums - research real world types and put here
@@ -117,5 +119,8 @@ class EquipmentTable(SharedEquipment, table=True):
     )
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
+
+    # Links back to the maintenance table
+    maintenance_logs: List["MaintainanceTable"] = Relationship(back_populates="equipment")
     
 
