@@ -282,4 +282,26 @@
         </sql>
     </changeSet>
 
+
+    <changeSet id="create_column_status_for_issues" author="ved">
+        <comment>Create column status for issues table</comment>
+        <addColumn tableName="issues">
+            <column name="status" type="varchar(20)" defaultValue="Open">
+            <!-- Open is not necessary as pydantic already has a default value for this field -->
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+
+    <changeSet id="create_column_resolved_at_for_issues" author="ved">
+        <comment>Create column resolved_at for issues table</comment>
+        <addColumn tableName="issues">
+            <column name="resolved_at" type="date">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+
 </databaseChangeLog>
