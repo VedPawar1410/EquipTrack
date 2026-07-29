@@ -25,7 +25,7 @@ async def create_equipment(equipment: EquipmentIn, db: AsyncSession = Depends(ge
         location=equipment.location,
         department=equipment.department,
         purchased_at=equipment.purchased_at,
-        warranty_expires_at=equipment.warranty_expires_at,
+        warranty_expires_at=equipment.warranty_expires_at
     )
     db.add(new_equipment)
     try:
