@@ -35,14 +35,7 @@ async def create_maintainance(
         next_scheduled_at=maintenance.next_scheduled_at,
     )
     db.add(new_maintainance)
-    try:
-        await db.commit()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail=f"Maintenance with log_type '{maintenance.log_type}' already exists",
-        )
+    await db.commit()
     # I want to put a check to make sure that the log type is in the correct format
     await db.refresh(new_maintainance)
     return new_maintainance
