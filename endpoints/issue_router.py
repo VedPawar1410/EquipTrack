@@ -133,6 +133,8 @@ async def update_issue_assign(
     if not update_issue:
         raise HTTPException(status_code=404, detail="Issue not found")
 
+    update_issue.assigned_to = assigned_to
+
     await db.commit()
     await db.refresh(update_issue)  
     return update_issue
