@@ -4,7 +4,7 @@
 __pycache__/
 
 
-/liquibase/liquibase.properties
+/migrations/liquibase.properties
 
 
 # EquipTrack_Capstone_Project_Spec.md
