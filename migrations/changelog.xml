@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Root level properties or includes go here -->
+
+    <changeSet id="create_table_equipment" author="ved">
+        <comment>Create equipment table initial structure</comment>
+        <createTable tableName="equipment">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model_number" type="varchar(50)"></column>
+            <column name="serial_number" type="varchar(100)">
+                <constraints unique="true" uniqueConstraintName="equipment_table_serial_number"/>
+            </column>
+            <column name="equipment_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department" type="varchar(100)" defaultValue="active">
+                <constraints nullable="false"/>
+            </column>
+            <column name="purchased_at" type="date"/>
+            <column name="warranty_expires_at" type="date"/>
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone" defaultValueComputed="now()"/>
+
+        </createTable>
+    </changeSet>
+
+
+    <changeSet id="create_table_maintenance_logs" author="ved">
+        <comment>Create maintenance_logs table initial structure</comment>
+        <createTable tableName="maintenance_logs">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="equipment_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="log_type" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="performed_by" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="performed_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_minutes" type="int"/>
+            <column name="cost_usd" type="numeric(10,2)"/>
+            <column name="next_scheduled_at" type="timestamp with time zone"/>
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Change Set 3: Maintenance Logs Constraints -->
+    <changeSet id="add_constraints_to_maintenance_logs" author="ved" runInTransaction="false">
+        <comment>Add foreign key and check constraints to maintenance_logs</comment>
+        
+        <addForeignKeyConstraint baseTableName="maintenance_logs" 
+                                 baseColumnNames="equipment_id" 
+                                 constraintName="fk_maintenance_equipment_id" 
+                                 referencedTableName="equipment" 
+                                 referencedColumnNames="id" 
+                                 onDelete="CASCADE"/>
+
+        <sql>
+            ALTER TABLE maintenance_logs 
+            ADD CONSTRAINT duration_minutes_check 
+            CHECK (duration_minutes &gt; 0);
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="create_table_issues" author="ved">
+        <comment>Create issues table initial structure</comment>
+        <createTable tableName="issues">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="equipment_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text"></column>
+            <column name="severity" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reported_by" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assigned_to" type="varchar(100)"></column>
+            <column name="error_code" type="varchar(50)"></column>
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_constraints_to_issues" author="ved" runInTransaction="false">
+        <comment>Add foreign key and check constraints to issues</comment>
+        
+        <addForeignKeyConstraint baseTableName="issues" 
+                                 baseColumnNames="equipment_id" 
+                                 constraintName="fk_issue_equipment_id" 
+                                 referencedTableName="equipment" 
+                                 referencedColumnNames="id" 
+                                 onDelete="CASCADE"/>
+
+    </changeSet>
+
+    <changeSet id="create_table_parts" author="ved">
+        <comment>Create parts table initial structure</comment>
+        <createTable tableName="parts">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="equipment_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="part_name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="part_number" type="varchar(100)"></column>
+            <column name="quantity_in_stock" type="int" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reorder_threshold" type="int" defaultValue="2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_cost_usd" type="numeric(10,2)"></column>
+            <column name="supplier" type="varchar(100)"></column>
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_constraints_to_parts" author="ved" runInTransaction="false">
+        <comment>Add foreign key and check constraints to parts</comment>
+        
+        <addForeignKeyConstraint baseTableName="parts" 
+                                 baseColumnNames="equipment_id" 
+                                 constraintName="fk_parts_equipment_id" 
+                                 referencedTableName="equipment" 
+                                 referencedColumnNames="id" 
+                                 onDelete="CASCADE"/>
+
+        <sql>
+            ALTER TABLE parts 
+            ADD CONSTRAINT quantity_in_stock_check 
+            CHECK (quantity_in_stock &gt;= 0);
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="create_table_documents" author="ved">
+        <comment>Create documents table initial structure</comment>
+        <createTable tableName="documents">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="equipment_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="blob_url" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="doc_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_size_bytes" type="int"></column>
+            <column name="is_indexed" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_by" type="varchar(100)" defaultValueComputed="FALSE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_at" type="timestamp with time zone" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    
+    <changeSet id="add_constraints_to_documents" author="ved" runInTransaction="false">
+        <comment>Add foreign key and check constraints to documents</comment>
+        
+        <addForeignKeyConstraint baseTableName="documents" 
+                                 baseColumnNames="equipment_id" 
+                                 constraintName="fk_documents_equipment_id" 
+                                 referencedTableName="equipment" 
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="add_status_to_equipment" author="ved">
+        <comment>Add status column to equipment table</comment>
+        <addColumn tableName="equipment">
+            <column name="status" type="varchar(20)" defaultValue="active">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+
+    <changeSet id="fix_status_value_casing" author="ved">
+        <comment>Normalize status column to enum .value strings (name vs value bug)</comment>
+        <sql>
+            UPDATE equipment SET status = CASE status
+                WHEN 'ACTIVE' THEN 'active'
+                WHEN 'UNDER_MAINTENANCE' THEN 'under maintenance'
+                WHEN 'RETIRED' THEN 'retired'
+                ELSE status
+            END;
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="fix_equipment_type_value_casing" author="ved">
+        <comment>Normalize equipment_type column to enum .value strings (name vs value bug)</comment>
+        <sql>
+            UPDATE equipment SET equipment_type = CASE  equipment_type
+                WHEN 'STAMPING_PRESS' THEN 'Stamping Press'
+                WHEN 'COIL_LINE' THEN 'Coil Line'
+                WHEN 'WELDING_ROBOT' THEN 'Welding Robot'
+                WHEN 'SPOT_WELDER' THEN 'Spot Welder'
+                WHEN 'ROBOTIC_ARM' THEN 'Robotic Arm'
+                WHEN 'PAINT_ROBOT' THEN 'Paint Robot'
+                WHEN 'PAINT_BOOTH' THEN 'Paint Booth'
+                WHEN 'ECOAT_SYSTEM' THEN 'E-Coat System'
+                WHEN 'CURING_OVEN' THEN 'Curing Oven'
+                WHEN 'CNC_MACHINE' THEN 'CNC Machine'
+                WHEN 'HONING_MACHINE' THEN 'Honing Machine'
+                WHEN 'GRINDER' THEN 'Grinder'
+                WHEN 'DRILL_PRESS' THEN 'Drill Press'
+                WHEN 'LASER_CUTTER' THEN 'Laser Cutter'
+                WHEN 'PLASMA_CUTTER' THEN 'Plasma Cutter'
+                WHEN 'WATERJET_CUTTER' THEN 'Waterjet Cutter'
+                WHEN 'CONVEYOR' THEN 'Conveyor'
+                WHEN 'ASSEMBLY_ROBOT' THEN 'Assembly Robot'
+                WHEN 'TORQUE_TOOL_STATION' THEN 'Torque Tool Station'
+                WHEN 'AGV' THEN 'Automated Guided Vehicle'
+                WHEN 'MEASURING' THEN 'Measuring Equipment'
+                WHEN 'VISION_SYSTEM' THEN 'Vision System'
+                WHEN 'TEST_STAND' THEN 'Test Stand'
+                WHEN 'DYNAMOMETER' THEN 'Dynamometer'
+                WHEN 'FORKLIFT' THEN 'Forklift'
+                WHEN 'OVERHEAD_CRANE' THEN 'Overhead Crane'
+                WHEN 'HYDRAULIC_LIFT' THEN 'Hydraulic Lift'
+                WHEN 'PALLETIZER' THEN 'Palletizer'
+                WHEN 'AIR_COMPRESSOR' THEN 'Air Compressor'
+                WHEN 'BOILER' THEN 'Boiler'
+                WHEN 'HVAC_UNIT' THEN 'HVAC Unit'
+                WHEN 'GENERATOR' THEN 'Generator'
+                WHEN 'WATER_TREATMENT_SYSTEM' THEN 'Water   Treatment System'
+                ELSE equipment_type
+            END;
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="create_column_status_for_issues" author="ved">
+        <comment>Create column status for issues table</comment>
+        <addColumn tableName="issues">
+            <column name="status" type="varchar(20)" defaultValue="Open">
+            <!-- Open is not necessary as pydantic already has a default value for this field -->
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+
+    <changeSet id="create_column_resolved_at_for_issues" author="ved">
+        <comment>Create column resolved_at for issues table</comment>
+        <addColumn tableName="issues">
+            <column name="resolved_at" type="date">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+
+</databaseChangeLog>
