@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.issue import IssueTable
     from app.models.maintenance import MaintainanceTable
     from app.models.part import PartTable
+    from app.models.document import DocumentTable
 
 
 class EquipmentTable(SharedEquipment, table=True):
@@ -28,3 +29,4 @@ class EquipmentTable(SharedEquipment, table=True):
     maintenance_logs: List["MaintainanceTable"] = Relationship(back_populates="equipment")
     issues: List["IssueTable"] = Relationship(back_populates="equipment")
     parts: List["PartTable"] = Relationship(back_populates="equipment")
+    documents: List["DocumentTable"] = Relationship(back_populates="equipment")
