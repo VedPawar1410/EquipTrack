@@ -123,5 +123,6 @@ class EquipmentTable(SharedEquipment, table=True):
     # Links back to the maintenance table
     maintenance_logs: List["MaintainanceTable"] = Relationship(back_populates="equipment")
     issues: List["IssueTable"] = Relationship(back_populates="equipment")
+    parts: List["PartTable"] = Relationship(back_populates="equipment")
     
 
