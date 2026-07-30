@@ -1,31 +1,28 @@
-from uuid import UUID
-from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
-from models.maintenance_models import MaintainanceIn, MaintainanceOut, MaintainanceTable
-from models.equipment_models import EquipmentTable
-from fastapi import APIRouter
-from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
+from datetime import datetime, timedelta
 from typing import List
-from sqlmodel import select
-from models.equipment_models import STATUS, EquipmentType
-from typing import Optional
-from fastapi.responses import Response
-from datetime import date, datetime, timedelta
-from sqlmodel import between
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import between, select
+
+from app.core.database import get_db
+from app.dependencies import get_equipment_or_404
+from app.models.equipment import EquipmentTable
+from app.models.maintenance import MaintainanceTable
+from app.schemas.maintenance import MaintainanceIn, MaintainanceOut
 
 
 router = APIRouter()
 
 @router.post("/equipment/{equipment_id}/maintenance", response_model=MaintainanceOut, status_code=201, tags=["maintenance"])
 async def create_maintainance(
-    equipment_id: UUID,
     maintenance: MaintainanceIn,
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
-): 
+):
     new_maintainance = MaintainanceTable(
-        equipment_id=equipment_id,
+        equipment_id=equipment.id,
         log_type=maintenance.log_type,
         performed_by=maintenance.performed_by,
         performed_at=maintenance.performed_at,
@@ -43,13 +40,12 @@ async def create_maintainance(
 
 @router.get("/equipment/{equipment_id}/maintenance", response_model=List[MaintainanceOut], status_code=200, tags=["maintenance"])
 async def get_maintainance_logs(
-    equipment_id: UUID,
-    db: AsyncSession = Depends(get_db), 
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
+    db: AsyncSession = Depends(get_db),
 ):
     statement = (
         select(MaintainanceTable)
-        .join(EquipmentTable)
-        .where(MaintainanceTable.equipment_id == equipment_id)
+        .where(MaintainanceTable.equipment_id == equipment.id)
     )
     result = await db.execute(statement)
 

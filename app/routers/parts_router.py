@@ -1,37 +1,27 @@
-from uuid import UUID
-from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
-from models.equipment_models import EquipmentIn, EquipmentOut, EquipmentTable
-from models.issue_models import IssueIn, IssueOut, IssueTable
-from fastapi import APIRouter
-from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
 from typing import List
-from sqlmodel import select
-from models.equipment_models import STATUS, EquipmentType
-from typing import Optional
-from fastapi.responses import Response
-from models.parts_models import PartIn, PartOut, PartTable
-from sqlmodel import Field
-from sqlmodel import Relationship
-from sqlmodel import SQLModel
-from sqlmodel import Enum as SAEnum
-from enum import Enum
-from datetime import datetime, date
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
+from app.core.database import get_db
+from app.dependencies import get_equipment_or_404
+from app.models.equipment import EquipmentTable
+from app.models.part import PartTable
+from app.schemas.part import PartIn, PartOut
 
 
 router = APIRouter()
 
-@router.post("/equipment/{id}/parts", response_model=PartOut, status_code=201, tags=["parts"])
+@router.post("/equipment/{equipment_id}/parts", response_model=PartOut, status_code=201, tags=["parts"])
 async def create_part(
-    equipment_id: UUID,
     part: PartIn,
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
-): 
+):
     new_part = PartTable(
-        equipment_id=equipment_id,
+        equipment_id=equipment.id,
         part_name=part.part_name,
         part_number=part.part_number,
         quantity_in_stock=part.quantity_in_stock,
@@ -46,12 +36,12 @@ async def create_part(
     return new_part
 
 
-@router.get("/equipment/{id}/parts", response_model=List[PartOut], status_code=200, tags=["parts"])
+@router.get("/equipment/{equipment_id}/parts", response_model=List[PartOut], status_code=200, tags=["parts"])
 async def get_parts(
-    equipment_id: UUID,
-    db: AsyncSession = Depends(get_db), 
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
+    db: AsyncSession = Depends(get_db),
 ):
-    statement = select(PartTable).where(PartTable.equipment_id == equipment_id)
+    statement = select(PartTable).where(PartTable.equipment_id == equipment.id)
 
     result = await db.execute(statement)
     parts = result.scalars().all()

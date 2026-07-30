@@ -1,16 +1,15 @@
+from typing import List, Optional
 from uuid import UUID
-from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
-from models.equipment_models import EquipmentIn, EquipmentOut, EquipmentTable
-from fastapi import APIRouter
-from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
-from typing import List
-from sqlmodel import select
-from models.equipment_models import STATUS, EquipmentType
-from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
+from app.core.database import get_db
+from app.models.equipment import EquipmentTable
+from app.schemas.equipment import STATUS, EquipmentIn, EquipmentOut, EquipmentType
 
 # 1. Create a router instead of using 'app'
 router = APIRouter()

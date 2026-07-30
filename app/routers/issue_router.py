@@ -1,17 +1,15 @@
+from typing import List, Optional
 from uuid import UUID
-from database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
-from models.equipment_models import EquipmentIn, EquipmentOut, EquipmentTable
-from models.issue_models import IssueIn, IssueOut, IssueTable
-from fastapi import APIRouter
-from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
-from typing import List
-from sqlmodel import select
-from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
-from models.issue_models import STATUS, Severity
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
+from app.core.database import get_db
+from app.models.issue import IssueTable
+from app.schemas.issue import STATUS, IssueIn, IssueOut, Severity
 
 router = APIRouter()
 

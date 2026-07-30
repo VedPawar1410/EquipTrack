@@ -1,0 +1,53 @@
+from datetime import date, datetime
+from enum import Enum
+from uuid import UUID
+
+from sqlmodel import Enum as SAEnum
+from sqlmodel import Field, SQLModel
+
+class LogType(str, Enum):
+    # Planned / preventive
+    SCHEDULED = "Scheduled"
+    CALIBRATION = "Calibration"
+    CLEANING = "Cleaning"
+    INSTALLATION = "Installation"
+    SOFTWARE_UPDATE = "Software Update"
+    SAFETY_AUDIT = "Safety Audit"
+ 
+    # Reactive / unplanned
+    EMERGENCY = "Emergency"
+    CORRECTIVE = "Corrective"
+    WARRANTY_REPAIR = "Warranty Repair"
+ 
+    # Condition-based
+    PREDICTIVE = "Predictive"
+ 
+    # Routine check
+    INSPECTION = "Inspection"
+ 
+    # Major / lifecycle events
+    OVERHAUL = "Overhaul"
+    RETROFIT = "Retrofit"
+    DECOMMISSIONING = "Decommissioning"
+
+class SharedMaintainance(SQLModel):
+    log_type: LogType = Field(
+        sa_type=SAEnum(LogType, native_enum=False, create_type=False,
+        values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
+    )
+    performed_by: str
+    performed_at: date
+    description: str
+    duration_minutes: int | None = Field(default=None, gt=0)
+    cost_usd: float | None = None
+    next_scheduled_at: date | None = None
+
+class MaintainanceIn(SharedMaintainance):
+    pass
+
+class MaintainanceOut(SharedMaintainance):
+    id: UUID
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
+
