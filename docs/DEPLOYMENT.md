@@ -147,6 +147,17 @@ az role assignment create --assignee "$APP_ID" --role Contributor \
 echo "AZURE_CLIENT_ID=$APP_ID  AZURE_TENANT_ID=$TENANT  AZURE_SUBSCRIPTION_ID=$SUB"
 ```
 
+**The subject must match exactly what GitHub sends.** GitHub may use its newer format with the owner's
+and repository's numeric IDs, e.g. `repo:VedPawar1410@178157570/EquipTrack@1306498421:environment:production`
+(IDs, unlike names, can never be renamed or re-registered by someone else). If the first deploy fails
+with `AADSTS700213: No matching federated identity record`, copy the `subject claim` that the
+`azure/login` step printed and update the credential:
+
+```bash
+az ad app federated-credential update --id "$APP_ID" --federated-credential-id github-production \
+  --parameters '{"name":"github-production","issuer":"https://token.actions.githubusercontent.com","subject":"<subject claim from the log>","audiences":["api://AzureADTokenExchange"]}'
+```
+
 These three IDs are identifiers, not secrets. They are useless without the trust set up above, but storing them as secrets keeps them out of logs.
 
 ### 5. GitHub settings
@@ -165,15 +176,19 @@ Run **Actions → Deploy → Run workflow**. It migrates Neon, rolls the app ont
 
 ### 6. Load the demo data
 
-Run the seed once from your machine against Neon, using the image the workflow built. It already contains the embedding model, so the manuals are embedded locally and stored in Neon.
+Run the seed once from your machine against Neon, from the repo root, using the local docker compose image.
+It contains the embedding model, so the manuals are embedded on your machine and stored in Neon.
+(The GHCR image is built for amd64; on an Apple Silicon Mac the locally built image runs natively.)
 
 ```bash
+read -s "DATABASE_URL?Neon URL: "; echo
 read -s "DEMO_ADMIN_PASSWORD?Private admin password: "; echo
-docker run --rm \
-  -e DATABASE_URL="$DATABASE_URL" -e JWT_SECRET_KEY="$JWT_SECRET_KEY" -e DEMO_ADMIN_PASSWORD \
-  -v "$PWD/sample_data:/app/sample_data:ro" \
-  ghcr.io/vedpawar1410/equiptrack:latest python -m app.seed_demo
+docker compose run --rm --no-deps \
+  -e DATABASE_URL="$DATABASE_URL" -e DEMO_ADMIN_PASSWORD="$DEMO_ADMIN_PASSWORD" \
+  app python -m app.seed_demo
 ```
+
+`--no-deps` skips the local Postgres and Liquibase containers: the seed talks to Neon only.
 
 With `DEMO_ADMIN_PASSWORD` set, the admin account (`priya`) gets your private password. The supervisor (`maria`) and technician (`ravi`, `jlee`) accounts keep the published demo passwords from `app/seed_demo.py`. The seed is idempotent, so re-running it restores any demo machine a visitor deleted.
 
