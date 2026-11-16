@@ -17,8 +17,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install ruff==0.17.5
@@ -28,8 +28,8 @@ jobs:
     # Pytest starts its own Postgres + Liquibase containers (testcontainers); the runner has Docker.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -45,7 +45,7 @@ jobs:
     # and serve an authenticated request, exactly as a developer or the deploy would run it.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build and start the stack
         run: docker compose up -d --build
       - name: Wait for /health
@@ -76,8 +76,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: npm
@@ -92,15 +92,15 @@ jobs:
     # alters the contract without the types being regenerated (and the frontend type-checked), fail here.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: requirements*.txt
       - run: pip install -r requirements.txt
       - run: python scripts/export_openapi.py
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: npm
