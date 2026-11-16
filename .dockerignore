@@ -3,3 +3,7 @@ __pycache__
 .env
 .git
 .venv
+venv
+.pytest_cache
+tests
+migrations/liquibase.properties

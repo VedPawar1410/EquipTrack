@@ -1,19 +1,20 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
 from app.core.config import settings
 
-# create a async database engine connection pool
+# One async connection pool for the whole app.
 engine = create_async_engine(
     settings.database_url,
     pool_size=10,
     max_overflow=0,
-    echo=True,
+    pool_pre_ping=True,  # test a pooled connection before use; survives DB restarts / idle drops
+    echo=settings.sql_echo,
 )
 
-# create a session
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
-# create a database that takes in a session
 async def get_db():
+    """FastAPI dependency: one session per request, closed automatically afterwards."""
     async with async_session_maker() as session:
         yield session

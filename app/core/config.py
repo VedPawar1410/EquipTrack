@@ -1,9 +1,13 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
-    database_url: str
+    """All runtime configuration, read from environment variables (or a local .env file)."""
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    database_url: str
+    sql_echo: bool = False
+
 
 settings = Settings()

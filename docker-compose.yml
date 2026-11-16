@@ -1,26 +1,56 @@
+# Local development stack: Postgres -> Liquibase migrations -> FastAPI (hot reload).
+#   docker compose up --build
+# Startup order is enforced, not hoped for:
+#   postgres must pass its healthcheck -> liquibase runs `update` and exits 0 -> app starts.
 services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app          # live code sync — edit locally, container sees it instantly
-    environment:
-      DATABASE_URL: postgresql://equiptrack:devpassword@postgres:5432/equiptrack
-    depends_on:
-      - postgres
-
-      
   postgres:
     image: postgres:16
-    container_name: equiptrack-db
     environment:
       POSTGRES_USER: equiptrack
-      POSTGRES_PASSWORD: devpassword
+      POSTGRES_PASSWORD: devpassword   # local dev only; real secrets come from the host in prod
       POSTGRES_DB: equiptrack
     ports:
-      - "5432:5432"
+      # Host port 5433 avoids clashing with a Postgres already installed on the host (5432).
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U equiptrack -d equiptrack"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  liquibase:
+    image: liquibase/liquibase:4.29
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/liquibase/changelog:ro
+    command:
+      - --search-path=/liquibase/changelog
+      - --changelog-file=changelog.xml
+      - --url=jdbc:postgresql://postgres:5432/equiptrack
+      - --username=equiptrack
+      - --password=devpassword
+      - update
+
+  app:
+    build: .
+    depends_on:
+      liquibase:
+        condition: service_completed_successfully
+    environment:
+      # +asyncpg selects the async driver; plain postgresql:// would make SQLAlchemy look for psycopg.
+      DATABASE_URL: postgresql+asyncpg://equiptrack:devpassword@postgres:5432/equiptrack
+      # Bind-mounted files often don't emit change events inside the container
+      # (Colima, Docker Desktop on Windows), so poll for edits instead.
+      WATCHFILES_FORCE_POLLING: "true"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./app:/app/app   # live code sync for --reload
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
 volumes:
   pgdata:
