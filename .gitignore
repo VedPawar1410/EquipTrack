@@ -7,7 +7,6 @@ __pycache__/
 /migrations/liquibase.properties
 
 
-# EquipTrack_Capstone_Project_Spec.md
 
 # Test artifacts
 .pytest_cache/
