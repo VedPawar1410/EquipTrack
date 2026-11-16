@@ -1,7 +1,9 @@
+import re
 from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
+from pydantic import field_validator
 from sqlalchemy import Enum as SAEnum
 from sqlmodel import Field, SQLModel
 
@@ -13,8 +15,8 @@ class Role(str, Enum):
 
 
 class SharedUser(SQLModel):
-    username: str = Field(min_length=3, max_length=50, regex=r"^[a-zA-Z0-9._-]+$")
-    email: str = Field(max_length=100, regex=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    username: str = Field(min_length=3, max_length=50)
+    email: str = Field(max_length=100)
     role: Role = Field(
         default=Role.TECHNICIAN,
         sa_type=SAEnum(Role, native_enum=False, create_type=False,
@@ -25,6 +27,22 @@ class SharedUser(SQLModel):
 class UserCreate(SharedUser):
     """Admins create accounts; there is no public sign-up (plant accounts are provisioned, like badges)."""
     password: str = Field(min_length=8, max_length=128)
+
+    # Explicit validators: SQLModel's Field(regex=...) is not enforced under Pydantic v2
+    # (a test caught "has spaces" being accepted as a username).
+    @field_validator("username")
+    @classmethod
+    def username_chars(cls, value: str) -> str:
+        if not re.fullmatch(r"[a-zA-Z0-9._-]+", value):
+            raise ValueError("username may only contain letters, digits, '.', '_' and '-'")
+        return value
+
+    @field_validator("email")
+    @classmethod
+    def email_shape(cls, value: str) -> str:
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", value):
+            raise ValueError("not a valid email address")
+        return value.lower()
 
 
 class UserOut(SharedUser):

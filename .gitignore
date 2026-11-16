@@ -8,3 +8,8 @@ __pycache__/
 
 
 # EquipTrack_Capstone_Project_Spec.md
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

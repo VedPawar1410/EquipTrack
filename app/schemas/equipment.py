@@ -1,3 +1,4 @@
+from pydantic import ConfigDict
 from sqlmodel import SQLModel
 from datetime import date, datetime
 from uuid import UUID, uuid4
@@ -81,26 +82,23 @@ class SharedEquipment(SQLModel):
     purchased_at: date | None = None         # unknown for older machines
     warranty_expires_at: date | None = None
 
-    # model_config = ConfigDict
-    # FIX: Use standard class Config for SQLModel compatibility
-    # https://share.google/aimode/1Ceh5MsCNGSADmlGW
-    class Config:
-        json_schema_extra={
-            "example": {
-                "name": "Robotic Arm Alpha",
-                "model_number": "RA-2000-X",
-                "serial_number": "SN-987654321",
-                "equipment_type": "Robotic Arm",  # Matches the Enum value
-                "location": "Bay 4, Assembly Line A",
-                "department": "Body Shop",
-                "purchased_at": "2026-01-15",# ISO format date strings
-                "warranty_expires_at": "2031-01-15"
-            }
-        }
 
 class EquipmentIn(SharedEquipment):
-    pass
-    
+    # Example shown in /docs. Lives on the request schema (not the shared base) so the
+    # table model's own SQLModel config is left alone.
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "name": "Robotic Arm Alpha",
+            "model_number": "RA-2000-X",
+            "serial_number": "SN-987654321",
+            "equipment_type": "Robotic Arm",  # an EquipmentType value
+            "location": "Bay 4, Assembly Line A",
+            "department": "Body Shop",
+            "purchased_at": "2026-01-15",
+            "warranty_expires_at": "2031-01-15",
+        }
+    })
+
 
 class EquipmentOut(SharedEquipment):
     id: UUID

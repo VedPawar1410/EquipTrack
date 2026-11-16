@@ -2,3 +2,6 @@
 -r requirements.txt
 pytest==9.2.0
 pytest-asyncio==1.5.0
+pytest-cov==7.1.0
+httpx==0.28.1                        # AsyncClient + ASGITransport: call the app in-process, no server
+testcontainers[postgres]==4.15.0     # throwaway Postgres in Docker for each test run
