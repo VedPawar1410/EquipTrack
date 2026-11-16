@@ -1,0 +1,113 @@
+name: Deploy
+
+# Continuous delivery for the API: runs only after CI has passed on main, so nothing untested ships.
+#   image   -> build the Docker image once and push it to GitHub Container Registry (tagged with the commit)
+#   migrate -> run the Liquibase changelog against the production database (Neon)
+#   deploy  -> point the Azure Container App at the new image, then smoke-test /health
+# Migrations run BEFORE the new code: every changeset is additive (expand/contract), so the old
+# version keeps working on the new schema during the switch-over. See docs/DEPLOYMENT.md.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:  # manual re-run from the Actions tab, e.g. after first-time setup
+
+# Never run two deploys at once, and never cancel one halfway through a migration.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # push to ghcr.io with the workflow's own short-lived token: no registry password stored
+    outputs:
+      image: ${{ steps.name.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}  # exactly the commit CI tested
+      - id: name
+        # Registry names must be lowercase; the GitHub repository name is not.
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          # The commit tag is what gets deployed (traceable, easy rollback); :latest is for first-time setup.
+          tags: |
+            ${{ steps.name.outputs.image }}:${{ github.event.workflow_run.head_sha || github.sha }}
+            ${{ steps.name.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  migrate:
+    needs: image
+    # Skipped (not failed) until the production environment is set up: see docs/DEPLOYMENT.md, step 5.
+    if: vars.AZURE_CONTAINERAPP_NAME != ''
+    runs-on: ubuntu-latest
+    environment: production  # secrets live in the GitHub "production" environment, not the repo
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Liquibase update (Neon)
+        env:
+          LIQUIBASE_COMMAND_URL: ${{ secrets.NEON_JDBC_URL }}
+          LIQUIBASE_COMMAND_USERNAME: ${{ secrets.NEON_DB_USER }}
+          LIQUIBASE_COMMAND_PASSWORD: ${{ secrets.NEON_DB_PASSWORD }}
+        # Same Liquibase version and changelog as docker-compose and the test suite. Credentials go in as
+        # environment variables, so they never appear in the command line or the log.
+        run: |
+          docker run --rm \
+            -e LIQUIBASE_COMMAND_URL -e LIQUIBASE_COMMAND_USERNAME -e LIQUIBASE_COMMAND_PASSWORD \
+            -v "$PWD/migrations:/liquibase/changelog:ro" \
+            liquibase/liquibase:4.29 \
+            --search-path=/liquibase/changelog --changelog-file=changelog.xml update
+
+  deploy:
+    needs: [image, migrate]
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write  # OIDC: GitHub proves its identity to Azure, so no Azure password is stored anywhere
+    steps:
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - run: az extension add --name containerapp --upgrade --only-show-errors
+      - name: Roll the Container App onto the new image
+        env:
+          IMAGE: ${{ needs.image.outputs.image }}:${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          az containerapp update \
+            --name "${{ vars.AZURE_CONTAINERAPP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "$IMAGE" --output none
+      - name: Smoke test /health
+        # The app scales to zero, so the first request may wait for a cold start (image pull + model load).
+        run: |
+          fqdn=$(az containerapp show --name "${{ vars.AZURE_CONTAINERAPP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --query properties.configuration.ingress.fqdn --output tsv)
+          for attempt in $(seq 1 18); do
+            if curl --silent --fail --max-time 20 "https://$fqdn/health"; then echo; echo "healthy"; exit 0; fi
+            echo "attempt $attempt: not healthy yet"; sleep 10
+          done
+          echo "::error::https://$fqdn/health did not become healthy"; exit 1
