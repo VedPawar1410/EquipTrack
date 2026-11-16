@@ -2,10 +2,12 @@ from app.models.equipment import EquipmentTable
 from app.models.issue import IssueTable
 from app.models.maintenance import MaintainanceTable
 from app.models.part import PartTable
+from app.models.document import DocumentTable
 
 __all__ = [
     "EquipmentTable",
     "IssueTable",
     "MaintainanceTable",
     "PartTable",
+    "DocumentTable",
 ]

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -22,8 +22,8 @@ class EquipmentTable(SharedEquipment, table=True):
         sa_type=SAEnum(STATUS, native_enum=False, create_type=False,
         values_callable=lambda enum_cls: [e.value for e in enum_cls])  # type: ignore
     )
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Links back to the maintenance table
     maintenance_logs: List["MaintainanceTable"] = Relationship(back_populates="equipment")

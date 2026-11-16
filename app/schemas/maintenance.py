@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from uuid import UUID
 
@@ -47,7 +47,7 @@ class MaintainanceIn(SharedMaintainance):
 
 class MaintainanceOut(SharedMaintainance):
     id: UUID
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 

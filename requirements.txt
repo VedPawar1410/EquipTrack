@@ -1,13 +1,8 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-psycopg2-binary
-python-dotenv
-asyncio
-sqlmodel
-pydantic
-pytest
-pytest-asyncio
-requests
-asyncpg
-pydantic-settings
+# Runtime dependencies only, pinned so a fresh install matches what was tested.
+fastapi==0.163.1
+uvicorn[standard]==0.54.0
+sqlmodel==0.0.50
+sqlalchemy[asyncio]==2.1.8   # [asyncio] pulls in greenlet, which SQLAlchemy 2.1 no longer installs by default
+asyncpg==0.32.0
+pydantic==2.14.3
+pydantic-settings==2.16.3

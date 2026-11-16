@@ -1,0 +1,4 @@
+# Test / dev tooling on top of the runtime deps.
+-r requirements.txt
+pytest==9.2.0
+pytest-asyncio==1.5.0

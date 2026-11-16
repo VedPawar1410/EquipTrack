@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from uuid import UUID, uuid4
 from sqlmodel import Field
 from enum import Enum
@@ -43,7 +43,7 @@ class DocumentShared(SQLModel):
     )
     file_size_bytes: int | None = None
     is_indexed: bool = False
-    uploaded_at: date = Field(default_factory=datetime.now)
+    uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class DocumentIn(DocumentShared):
     equipment_id: UUID
