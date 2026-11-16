@@ -1,11 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Archive, ChevronDown, CircleAlert, Download, FileText, Package, Pencil, Wrench } from "lucide-react";
+import { ArrowLeft, Archive, ChevronDown, CircleAlert, Download, FileText, Package, Pencil, Sparkles, Wrench } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
 import { CodePill, EquipmentStatusBadge, IssueStatusBadge, Pill, SeverityBadge } from "@/components/domain/badges";
+import { useAssistant } from "@/components/assistant/assistant-context";
 import { EmptyState } from "@/components/domain/empty-state";
 import { HealthRing } from "@/components/domain/health-ring";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const BAND_TEXT = { good: "text-success", fair: "text-warning", poor: "text-dang
 
 export function EquipmentDetail({ id }: { id: string }) {
   const { data: me } = useMe();
+  const { openAssistant } = useAssistant();
   const queryClient = useQueryClient();
   const summary = useQuery({
     queryKey: keys.summary(id),
@@ -84,7 +86,10 @@ export function EquipmentDetail({ id }: { id: string }) {
               <CodePill>{e.serial_number}</CodePill> {e.equipment_type} · {e.location} · {e.department}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => openAssistant({ mode: "diagnose", equipmentId: e.id })}>
+              <Sparkles className="size-4" /> Ask AI
+            </Button>
             {hasRole(me?.role, "supervisor") && e.status !== "retired" && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -151,7 +156,8 @@ export function EquipmentDetail({ id }: { id: string }) {
       </div>
 
       <Tabs defaultValue="overview">
-        <TabsList>
+        {/* Five tabs are wider than a phone: let the tab bar scroll sideways instead of widening the page. */}
+        <TabsList className="max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
           <TabsTrigger value="issues">Issues</TabsTrigger>

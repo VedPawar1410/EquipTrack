@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { useHydrated } from "@/hooks/use-hydrated";
 import { api, unwrap, type Schemas } from "@/lib/api/client";
 
 export type Role = Schemas["Role"];
@@ -12,12 +13,19 @@ export function hasRole(role: Role | undefined, minimum: Role) {
   return role !== undefined && RANK[role] >= RANK[minimum];
 }
 
+/**
+ * The signed-in user. Until hydration finishes it reports "pending", exactly like the server render
+ * (which never knows who is signed in). Without this, a part of the page that hydrates after the user
+ * has loaded would render role-dependent UI the server HTML lacks: a hydration mismatch.
+ */
 export function useMe() {
-  return useQuery({
+  const hydrated = useHydrated();
+  const query = useQuery({
     queryKey: ["me"],
     queryFn: async () => unwrap(await api.GET("/api/v1/auth/me")),
     staleTime: 5 * 60_000,
   });
+  return { data: hydrated ? query.data : undefined, isPending: !hydrated || query.isPending };
 }
 
 export async function signOut() {

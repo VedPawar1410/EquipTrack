@@ -31,7 +31,7 @@ export function SupervisorDashboard() {
   if (isPending || !data) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-28" />)}</div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-28" />)}</div>
         <div className="grid gap-4 lg:grid-cols-3"><Skeleton className="h-80 lg:col-span-2" /><Skeleton className="h-80" /></div>
       </div>
     );
@@ -39,7 +39,7 @@ export function SupervisorDashboard() {
   const openIssues = Object.values(data.open_issues_by_severity).reduce((a, b) => a + b, 0);
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
         <KpiCard label="Active equipment" value={data.equipment_by_status.active ?? 0} icon={Factory} tone="success"
                  hint={`${data.equipment_by_status["under maintenance"] ?? 0} under maintenance`} href="/equipment?status=active" />
         <KpiCard label="Open issues" value={openIssues} icon={CircleAlert} tone={data.critical_open_issues ? "danger" : "neutral"}

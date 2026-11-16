@@ -68,9 +68,7 @@ function Notifications() {
 
 export function Topbar() {
   const router = useRouter();
-  const hydrated = useHydrated();
-  const { data } = useMe();
-  const me = hydrated ? data : undefined; // see useHydrated
+  const { data: me } = useMe();
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">
