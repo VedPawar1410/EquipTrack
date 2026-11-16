@@ -8,6 +8,7 @@ from app.models.equipment import EquipmentTable
 from app.models.issue import IssueTable
 from app.models.part import PartTable
 from app.models.user import UserTable
+from app.services.auth_service import verify_password
 
 
 async def count(session_maker, model):
@@ -45,3 +46,18 @@ async def test_seed_never_changes_an_existing_users_password(session_maker, monk
     async with session_maker() as db:
         priya = (await db.execute(select(UserTable).where(UserTable.username == "priya"))).scalar_one()
     assert priya.hashed_password == password_hash
+
+
+async def test_admin_gets_the_private_password_when_one_is_set(session_maker, monkeypatch):
+    """On a public deployment the admin password must not be the published one."""
+    monkeypatch.setattr(seed_demo, "async_session_maker", session_maker)
+    monkeypatch.setattr(seed_demo, "engine", database.engine)
+    monkeypatch.setenv("DEMO_ADMIN_PASSWORD", "Private-Admin-Pass-42")
+
+    await seed_demo.seed()
+    async with session_maker() as db:
+        users = {u.username: u for u in (await db.execute(select(UserTable))).scalars()}
+    published = {name: password for name, _, _, password in seed_demo.DEMO_USERS}
+    assert verify_password("Private-Admin-Pass-42", users["priya"].hashed_password)
+    assert not verify_password(published["priya"], users["priya"].hashed_password)
+    assert verify_password(published["ravi"], users["ravi"].hashed_password)   # other demo logins unchanged

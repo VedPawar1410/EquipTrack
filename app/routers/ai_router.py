@@ -3,14 +3,15 @@ from langchain_core.runnables import Runnable
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.dependencies import get_current_user, get_equipment_or_404
+from app.dependencies import get_equipment_or_404, limit_ai_requests
 from app.models.equipment import EquipmentTable
 from app.schemas.ai import AIAnswer, AskRequest, DiagnoseRequest
 from app.services import ai_service
 from app.services.llm import get_chat_model
 
 # Every role may ask: answering questions about the manuals is the technician's core use case.
-router = APIRouter(prefix="/ai", tags=["ai"], dependencies=[Depends(get_current_user)])
+# limit_ai_requests depends on get_current_user, so this also requires a signed-in user.
+router = APIRouter(prefix="/ai", tags=["ai"], dependencies=[Depends(limit_ai_requests)])
 
 
 @router.post("/ask", response_model=AIAnswer)

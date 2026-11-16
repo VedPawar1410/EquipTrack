@@ -2,6 +2,24 @@ from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
+
+
+def to_asyncpg_url(url: str) -> str:
+    """Accept the URL a host hands out (e.g. Neon's `postgresql://...?sslmode=require&channel_binding=require`)
+    and return one SQLAlchemy's asyncpg driver understands.
+
+    asyncpg takes `ssl=<mode>`, not libpq's `sslmode`, and has no `channel_binding` option, so passing
+    the host's URL through unchanged fails at connect time with "unexpected keyword argument".
+    """
+    parsed = make_url(url)
+    if parsed.drivername in ("postgres", "postgresql"):
+        parsed = parsed.set(drivername="postgresql+asyncpg")
+    query = dict(parsed.query)
+    if "sslmode" in query:
+        query["ssl"] = query.pop("sslmode")
+    query.pop("channel_binding", None)
+    return parsed.set(query=query).render_as_string(hide_password=False)
 
 
 class Settings(BaseSettings):
@@ -11,6 +29,11 @@ class Settings(BaseSettings):
 
     database_url: str
     sql_echo: bool = False
+
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        return to_asyncpg_url(value)
 
     # Auth. No default secret on purpose: the app refuses to start without one,
     # so a forgotten env var can never mean "signed with a well-known dev key" in production.
@@ -36,6 +59,8 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr | None = None
     gemini_model: str = "gemini-3.5-flash-lite"
     llm_timeout_seconds: float = 30
+    # Per user, shared by /ai/ask and /ai/diagnose: protects the free LLM quotas on a public demo.
+    ai_requests_per_hour: int = Field(default=30, ge=1)
 
     @field_validator("groq_api_key", "gemini_api_key", mode="before")
     @classmethod

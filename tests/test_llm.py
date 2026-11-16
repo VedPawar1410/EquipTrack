@@ -32,4 +32,4 @@ def test_single_provider_has_no_fallback_wrapper(monkeypatch):
 
 def test_blank_key_counts_as_missing():
     from app.core.config import Settings
-    assert Settings(groq_api_key="", database_url="x", jwt_secret_key="k" * 32).groq_api_key is None
+    assert Settings(groq_api_key="", database_url="postgresql+asyncpg://u:p@h/db", jwt_secret_key="k" * 32).groq_api_key is None

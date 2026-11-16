@@ -6,11 +6,14 @@ Idempotent: anything that already exists (same username, serial number or docume
 and an existing user's password is never changed. Dates are relative to today, so "due in 30 days"
 and "overdue" always mean something.
 
-DEMO / LOCAL USE ONLY. The demo accounts below have fixed, published passwords so anyone trying the
-app can sign in. Never run this against a database that holds real data, and rotate or deactivate
-these accounts on any public deployment.
+DEMO USE ONLY. The supervisor and technician accounts below have fixed, published passwords so anyone
+trying the app can sign in. Never run this against a database that holds real data.
+
+On a public deployment, set DEMO_ADMIN_PASSWORD when seeding: the admin account then gets that private
+password instead of the published one, so visitors can't delete data or manage users.
 """
 import asyncio
+import os
 import pathlib
 from datetime import date, datetime, time, timedelta, timezone
 
@@ -108,6 +111,8 @@ async def seed() -> None:
     async with async_session_maker() as db:
         users = {u.username: u for u in (await db.execute(select(UserTable))).scalars()}
         for username, email, role, password in DEMO_USERS:
+            if role == "admin":
+                password = os.environ.get("DEMO_ADMIN_PASSWORD") or password
             if username not in users:
                 users[username] = UserTable(username=username, email=email, role=role,
                                             hashed_password=hash_password(password))

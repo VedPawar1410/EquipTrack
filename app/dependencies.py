@@ -1,10 +1,13 @@
+import math
 from uuid import UUID
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import get_db
+from app.core.rate_limit import SlidingWindowLimiter
 from app.models.equipment import EquipmentTable
 from app.models.user import UserTable
 from app.schemas.user import Role
@@ -41,6 +44,22 @@ def require_role(minimum: Role):
         return user
 
     return checker
+
+
+ai_limiter = SlidingWindowLimiter(window_seconds=3600)
+
+
+async def limit_ai_requests(user: UserTable = Depends(get_current_user)) -> None:
+    """429 once a user has made `ai_requests_per_hour` AI requests in the last hour.
+    Every answer may spend a free LLM quota, so a public demo account must not be able to drain it."""
+    limit = settings.ai_requests_per_hour
+    retry_after = ai_limiter.hit(user.id, limit)
+    if retry_after is not None:
+        raise HTTPException(
+            status_code=429,
+            detail=f"AI limit reached ({limit} questions per hour). Try again in {math.ceil(retry_after / 60)} min.",
+            headers={"Retry-After": str(retry_after)},
+        )
 
 
 async def get_equipment_or_404(

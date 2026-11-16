@@ -26,6 +26,7 @@ from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # noqa: E402
 
 from app.core.database import get_db, get_session_maker  # noqa: E402
+from app.dependencies import ai_limiter  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.user import UserTable  # noqa: E402
 from app.schemas.user import Role  # noqa: E402
@@ -65,6 +66,11 @@ def _use_test_database(session_maker):
     app.dependency_overrides[get_chat_model] = lambda: None  # no LLM unless a test injects a fake
     yield
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_ai_limits():
+    ai_limiter.reset()  # the limiter is process-wide; no test may inherit another's request count
 
 
 @pytest.fixture(autouse=True)

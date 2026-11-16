@@ -1,5 +1,7 @@
 from datetime import date, timedelta
 
+from app.schemas.common import utc_now
+
 ZERO = "00000000-0000-0000-0000-000000000000"
 LOG = {"log_type": "Scheduled", "performed_at": "2026-11-04T10:00:00Z", "description": "Lubrication service",
        "duration_minutes": 120, "cost_usd": 450.0}
@@ -43,7 +45,7 @@ async def test_empty_history_is_200(technician, equipment):
 
 
 async def test_upcoming_window_includes_today_through_day_30(technician, make_equipment):
-    today = date.today()
+    today = utc_now().date()                         # the API defines "today" in UTC, not the laptop's timezone
     for offset in (-1, 0, 30, 31):                  # one machine per planned date
         machine = await make_equipment()
         await technician.post(f"/equipment/{machine['id']}/maintenance",
