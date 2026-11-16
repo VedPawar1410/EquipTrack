@@ -9,98 +9,58 @@ from app.core.database import get_db
 from app.dependencies import get_equipment_or_404
 from app.models.equipment import EquipmentTable
 from app.models.part import PartTable
-from app.schemas.part import PartIn, PartOut
+from app.schemas.part import PartIn, PartOut, PartQuantityChange
+from app.services import parts_service
+
+router = APIRouter(tags=["parts"])
 
 
-router = APIRouter()
-
-@router.post("/equipment/{equipment_id}/parts", response_model=PartOut, status_code=201, tags=["parts"])
-async def create_part(
+@router.post("/equipment/{equipment_id}/parts", response_model=PartOut, status_code=201)
+async def add_part(
     part: PartIn,
     equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    new_part = PartTable(
-        equipment_id=equipment.id,
-        part_name=part.part_name,
-        part_number=part.part_number,
-        quantity_in_stock=part.quantity_in_stock,
-        reorder_threshold=part.reorder_threshold,
-        unit_cost_usd=part.unit_cost_usd,
-        supplier=part.supplier,
-    )
+    new_part = PartTable(equipment_id=equipment.id, **part.model_dump())
     db.add(new_part)
     await db.commit()
-    
     await db.refresh(new_part)
     return new_part
 
 
-@router.get("/equipment/{equipment_id}/parts", response_model=List[PartOut], status_code=200, tags=["parts"])
-async def get_parts(
+@router.get("/equipment/{equipment_id}/parts", response_model=List[PartOut])
+async def list_parts(
     equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    statement = select(PartTable).where(PartTable.equipment_id == equipment.id)
-
-    result = await db.execute(statement)
-    parts = result.scalars().all()
-
-    if not parts:
-        raise HTTPException(status_code=404, detail="No parts found")
-
-    return parts
+    statement = select(PartTable).where(PartTable.equipment_id == equipment.id).order_by(PartTable.part_name)
+    return (await db.execute(statement)).scalars().all()
 
 
+@router.get("/parts/low-stock", response_model=List[PartOut])
+async def list_low_stock_parts(db: AsyncSession = Depends(get_db)):
+    """Parts at or below their reorder threshold (served by the partial index idx_parts_low_stock)."""
+    statement = (
+        select(PartTable)
+        .where(PartTable.quantity_in_stock <= PartTable.reorder_threshold)
+        .order_by(PartTable.quantity_in_stock)
+    )
+    return (await db.execute(statement)).scalars().all()
 
 
-@router.get("/parts/low-stock", response_model=List[PartOut], status_code=200, tags=["parts"])
-async def get_low_stock_parts(
-    db: AsyncSession = Depends(get_db),
-):  
-    statement = select(PartTable).where(PartTable.quantity_in_stock <= PartTable.reorder_threshold)
-    result = await db.execute(statement)
-    parts = result.scalars().all()
-    if not parts:
-        raise HTTPException(status_code=404, detail="No such parts found")
-    return parts
-
-
-@router.get("/parts/{id}", response_model=PartOut, status_code=200, tags=["parts"])
-async def get_part(
-    id: UUID,
-    db: AsyncSession = Depends(get_db),
-):
-    part = await db.get(PartTable, id)
+@router.get("/parts/{part_id}", response_model=PartOut)
+async def get_part(part_id: UUID, db: AsyncSession = Depends(get_db)):
+    part = await db.get(PartTable, part_id)
     if not part:
         raise HTTPException(status_code=404, detail="Part not found")
     return part
 
 
-@router.patch("/parts/{id}/quantity", response_model=PartOut, status_code=200, tags=["parts"])
-async def update_part_quantity(
-    id: UUID,
-    quantity: int,
-    db: AsyncSession = Depends(get_db),
-):
-    part = await db.get(PartTable, id)
-    if not part:
+@router.patch("/parts/{part_id}/quantity", response_model=PartOut)
+async def change_part_quantity(part_id: UUID, body: PartQuantityChange, db: AsyncSession = Depends(get_db)):
+    try:
+        return await parts_service.adjust_stock(db, part_id, body.quantity_change)
+    except parts_service.PartNotFound:
         raise HTTPException(status_code=404, detail="Part not found")
-
-    current_quantity = part.quantity_in_stock
-
-    if quantity < 0: #client is trying to subtract quantity
-        if current_quantity - (-quantity) < 0:
-            raise HTTPException(status_code=400, detail="Quantity is going below zero, please maintain positive quantity")
-        current_quantity = current_quantity - (-quantity)
-
-    else:
-        current_quantity = current_quantity + quantity
-
-    part.quantity_in_stock = current_quantity
-
-    await db.commit()
-    await db.refresh(part)
-    return part
-
-
+    except parts_service.InsufficientStock as exc:
+        raise HTTPException(status_code=422, detail=str(exc))

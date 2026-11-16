@@ -1,164 +1,117 @@
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import get_db
+from app.dependencies import get_equipment_or_404
 from app.models.equipment import EquipmentTable
-from app.schemas.equipment import STATUS, EquipmentIn, EquipmentOut, EquipmentType
+from app.schemas.common import utc_now
+from app.schemas.equipment import STATUS, EquipmentIn, EquipmentOut, EquipmentStatusUpdate, EquipmentType
 
-# 1. Create a router instead of using 'app'
-router = APIRouter()
+router = APIRouter(prefix="/equipment", tags=["equipment"])
 
-@router.post("/equipment", response_model=EquipmentOut, status_code=201, tags=["equipment"])
-async def create_equipment(equipment: EquipmentIn, db: AsyncSession = Depends(get_db)):
-    new_equipment = EquipmentTable(
-        name=equipment.name,
-        model_number=equipment.model_number,
-        serial_number=equipment.serial_number,
-        equipment_type=equipment.equipment_type,
-        location=equipment.location,
-        department=equipment.department,
-        purchased_at=equipment.purchased_at,
-        warranty_expires_at=equipment.warranty_expires_at
-    )
-    db.add(new_equipment)
+
+async def _commit_or_409(db: AsyncSession, serial_number: str) -> None:
+    """serial_number is UNIQUE in the database; turn the violation into a clear 409."""
     try:
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail=f"Equipment with serial_number '{equipment.serial_number}' already exists",
-        )
+        raise HTTPException(status_code=409, detail=f"Equipment with serial_number '{serial_number}' already exists")
+
+
+@router.post("", response_model=EquipmentOut, status_code=201)
+async def create_equipment(equipment: EquipmentIn, db: AsyncSession = Depends(get_db)):
+    new_equipment = EquipmentTable.model_validate(equipment)
+    db.add(new_equipment)
+    await _commit_or_409(db, equipment.serial_number)
     await db.refresh(new_equipment)
     return new_equipment
-    
 
-@router.get("/equipment", response_model=List[EquipmentOut], status_code=200, tags=["equipment"])
-async def get_equipments(
-    db: AsyncSession = Depends(get_db), 
-    status: Optional[STATUS] = None, 
-    department: str | None = None,
-    type: Optional[EquipmentType] = None,
-    search: Optional[str] | None = None
+
+@router.get("", response_model=List[EquipmentOut])
+async def list_equipment(
+    db: AsyncSession = Depends(get_db),
+    status: Optional[STATUS] = None,
+    department: Optional[str] = None,
+    equipment_type: Optional[EquipmentType] = Query(default=None, alias="type"),
+    search: Optional[str] = Query(default=None, description="Case-insensitive partial match on name"),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
 ):
+    """An empty result is a normal answer (200 with []), not a 404: the collection exists."""
     statement = select(EquipmentTable)
-
     if status is not None:
         statement = statement.where(EquipmentTable.status == status)
-
     if department is not None:
         statement = statement.where(EquipmentTable.department == department)
-
-    if type is not None:
-        statement = statement.where(EquipmentTable.equipment_type == type)
-
-    if search is not None:
-        statement = statement.where(EquipmentTable.name.contains(search)) # type: ignore
-
-
-    result = await db.execute(statement)
-    equipments = result.scalars().all()
-
-    if not equipments:
-        raise HTTPException(status_code=404, detail="No equipment found")
-
-    return equipments
+    if equipment_type is not None:
+        statement = statement.where(EquipmentTable.equipment_type == equipment_type)
+    if search:
+        statement = statement.where(EquipmentTable.name.ilike(f"%{search}%"))  # type: ignore[union-attr]
+    statement = statement.order_by(EquipmentTable.created_at.desc()).offset(offset).limit(limit)  # type: ignore[union-attr]
+    return (await db.execute(statement)).scalars().all()
 
 
-
-@router.get("/equipment/{id}", response_model=EquipmentOut, status_code=200, tags=["equipment"])
-async def get_equipment_by_id(
-    id: UUID,
-    db: AsyncSession = Depends(get_db), 
-):
-    equipment = await db.get(EquipmentTable, id)
-
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")    
+@router.get("/{equipment_id}", response_model=EquipmentOut)
+async def get_equipment(equipment: EquipmentTable = Depends(get_equipment_or_404)):
     return equipment
 
 
-@router.get("/equipment/{id}/summary", response_model=EquipmentOut, status_code=200, tags=["equipment"])
-async def get_equipment_summary_by_id(
-    id: UUID,
-    db: AsyncSession = Depends(get_db), 
-):
-    equipment = await db.get(EquipmentTable, id)
-
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
-
-    # Full snapshot: equipment + last 5 logs + open issues + parts + documents -> Will work on this endpoint after we make the other features endpoints
+@router.get("/{equipment_id}/summary", response_model=EquipmentOut)
+async def get_equipment_summary(equipment: EquipmentTable = Depends(get_equipment_or_404)):
+    # TODO(step 9): full snapshot (recent logs, open issues, parts, documents, health score)
     return equipment
 
 
-@router.put("/equipment/{id}", response_model=EquipmentOut, status_code=200, tags=["equipment"])
+@router.put("/{equipment_id}", response_model=EquipmentOut)
 async def update_equipment(
-    id: UUID,
-    equipment: EquipmentIn,
+    changes: EquipmentIn,
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    update_equipment = await db.get(EquipmentTable, id)
-    if not update_equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
-    update_equipment.name = equipment.name
-    update_equipment.model_number = equipment.model_number
-    update_equipment.serial_number = equipment.serial_number # why serial number cannot not be updated?
-    update_equipment.equipment_type = equipment.equipment_type
-    update_equipment.location = equipment.location
-    update_equipment.department = equipment.department
-    update_equipment.purchased_at = equipment.purchased_at
-    update_equipment.warranty_expires_at = equipment.warranty_expires_at
-    await db.commit()
-    await db.refresh(update_equipment)
-    return update_equipment
+    equipment.sqlmodel_update(changes.model_dump())
+    equipment.updated_at = utc_now()
+    await _commit_or_409(db, changes.serial_number)
+    await db.refresh(equipment)
+    return equipment
 
 
-@router.patch("/equipment/{id}/status", response_model=EquipmentOut, status_code=200, tags=["equipment"])
+@router.patch("/{equipment_id}/status", response_model=EquipmentOut)
 async def update_equipment_status(
-    id: UUID,
-    status: STATUS,
+    body: EquipmentStatusUpdate,
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    update_equipment = await db.get(EquipmentTable, id)
-    if not update_equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
-    update_equipment.status = status
-    await db.commit()
-    await db.refresh(update_equipment)    
-    return update_equipment
-
-
-@router.delete("/equipment/{id}", status_code=204, tags=["equipment"])
-async def delete_equipment(
-    id: UUID,
-    db: AsyncSession = Depends(get_db),
-):
-    equipment = await db.get(EquipmentTable, id)
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
-    equipment.status = STATUS.RETIRED
+    equipment.status = body.status
+    equipment.updated_at = utc_now()
     await db.commit()
     await db.refresh(equipment)
+    return equipment
+
+
+@router.delete("/{equipment_id}", status_code=204)
+async def retire_equipment(
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
+    db: AsyncSession = Depends(get_db),
+):
+    """Soft delete: the machine is retired but its maintenance history is kept."""
+    equipment.status = STATUS.RETIRED
+    equipment.updated_at = utc_now()
+    await db.commit()
     return Response(status_code=204)
 
 
-# i thought to make an extra endpoint for a hard delete, but it's not needed
-# so i'm just going to delete it from the database
-@router.delete("/equipment/{id}/hard", status_code=204, tags=["equipment"])
+@router.delete("/{equipment_id}/hard", status_code=204)
 async def hard_delete_equipment(
-    id: UUID,
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    equipment = await db.get(EquipmentTable, id)
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
+    """Permanent delete. Logs, issues and parts go with it (ON DELETE CASCADE); documents are kept (SET NULL)."""
     await db.delete(equipment)
-    await db.commit()    
+    await db.commit()
     return Response(status_code=204)

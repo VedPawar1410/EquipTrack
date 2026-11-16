@@ -32,7 +32,7 @@ class LogType(str, Enum):
     RETROFIT = "Retrofit"
     DECOMMISSIONING = "Decommissioning"
 
-class SharedMaintainance(SQLModel):
+class SharedMaintenance(SQLModel):
     log_type: LogType = Field(
         sa_type=SAEnum(LogType, native_enum=False, create_type=False,
         values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
@@ -44,10 +44,10 @@ class SharedMaintainance(SQLModel):
     cost_usd: float | None = None
     next_scheduled_at: UTCDatetime | None = None
 
-class MaintainanceIn(SharedMaintainance):
+class MaintenanceIn(SharedMaintenance):
     pass
 
-class MaintainanceOut(SharedMaintainance):
+class MaintenanceOut(SharedMaintenance):
     id: UUID
     equipment_id: UUID
     created_at: datetime  # read from the row; it used to be generated at response time

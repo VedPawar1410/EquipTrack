@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
 
@@ -21,3 +22,13 @@ class PartOut(SharedPart):
     created_at: datetime
     updated_at: datetime | None = None
 
+class PartQuantityChange(SQLModel):
+    """Negative = consumed, positive = restocked."""
+    quantity_change: int = Field(description="Non-zero stock delta")
+
+    @field_validator("quantity_change")
+    @classmethod
+    def not_zero(cls, value: int) -> int:
+        if value == 0:
+            raise ValueError("quantity_change must not be 0")
+        return value

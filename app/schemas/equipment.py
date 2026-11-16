@@ -108,6 +108,5 @@ class EquipmentOut(SharedEquipment):
     created_at: datetime
     updated_at: datetime
 
-
-    
-
+class EquipmentStatusUpdate(SQLModel):
+    status: STATUS

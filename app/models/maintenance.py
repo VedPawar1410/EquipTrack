@@ -6,10 +6,10 @@ from sqlmodel import Field, Relationship
 
 from app.models.equipment import EquipmentTable
 from app.schemas.common import utc_now
-from app.schemas.maintenance import SharedMaintainance
+from app.schemas.maintenance import SharedMaintenance
 
 
-class MaintainanceTable(SharedMaintainance, table=True):
+class MaintenanceTable(SharedMaintenance, table=True):
     __tablename__ = "maintenance_logs"  # type: ignore
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     # CRITICAL: Define the foreign key connection here

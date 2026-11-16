@@ -41,3 +41,9 @@ class IssueOut(SharedIssue):
     updated_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None
 
+class IssueStatusUpdate(SQLModel):
+    status: STATUS
+
+
+class IssueAssign(SQLModel):
+    assigned_to: str = Field(min_length=1, max_length=100)

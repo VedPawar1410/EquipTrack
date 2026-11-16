@@ -1,138 +1,102 @@
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import Response
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import get_db
+from app.models.equipment import EquipmentTable
 from app.models.issue import IssueTable
-from app.schemas.issue import STATUS, IssueIn, IssueOut, Severity
+from app.schemas.common import utc_now
+from app.schemas.issue import STATUS, IssueAssign, IssueIn, IssueOut, IssueStatusUpdate, Severity
+from app.services import issue_service
 
-router = APIRouter()
+router = APIRouter(prefix="/issues", tags=["issues"])
 
-@router.post("/issues", response_model=IssueOut, status_code=201, tags=["issues"])
-async def create_issue(
-    issue: IssueIn,
-    db: AsyncSession = Depends(get_db),
-): 
-    new_issue = IssueTable(
-        title=issue.title,
-        description=issue.description,
-        severity=issue.severity,
-        reported_by=issue.reported_by,
-        error_code=issue.error_code,
-        equipment_id=issue.equipment_id,
-    )
+
+async def get_issue_or_404(issue_id: UUID, db: AsyncSession = Depends(get_db)) -> IssueTable:
+    issue = await db.get(IssueTable, issue_id)
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+    return issue
+
+
+@router.post("", response_model=IssueOut, status_code=201)
+async def report_issue(issue: IssueIn, db: AsyncSession = Depends(get_db)):
+    # Check the parent first: a bad equipment_id is the client's mistake (404), not a server error.
+    if await db.get(EquipmentTable, issue.equipment_id) is None:
+        raise HTTPException(status_code=404, detail="Equipment not found")
+    new_issue = IssueTable.model_validate(issue)
     db.add(new_issue)
     await db.commit()
-    # I want to put a check to make sure that the log type is in the correct format
     await db.refresh(new_issue)
     return new_issue
 
 
-@router.get("/issues", response_model=List[IssueOut], status_code=200, tags=["issues"])
-async def get_issues(
-    db: AsyncSession = Depends(get_db), 
+@router.get("", response_model=List[IssueOut])
+async def list_issues(
+    db: AsyncSession = Depends(get_db),
     status: Optional[STATUS] = None,
     severity: Optional[Severity] = None,
     equipment_id: Optional[UUID] = None,
     assigned_to: Optional[str] = None,
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
 ):
     statement = select(IssueTable)
-
     if status is not None:
         statement = statement.where(IssueTable.status == status)
-
     if severity is not None:
         statement = statement.where(IssueTable.severity == severity)
-
     if equipment_id is not None:
         statement = statement.where(IssueTable.equipment_id == equipment_id)
-
     if assigned_to is not None:
         statement = statement.where(IssueTable.assigned_to == assigned_to)
-
-    result = await db.execute(statement)
-    issues = result.scalars().all()
-
-    if not issues:
-        raise HTTPException(status_code=404, detail="No issues found")
-
-    return issues
+    statement = statement.order_by(IssueTable.created_at.desc()).offset(offset).limit(limit)  # type: ignore[union-attr]
+    return (await db.execute(statement)).scalars().all()
 
 
-@router.get("/issues/critical", response_model=List[IssueOut], status_code=200, tags=["issues"])
-async def get_critical_issues(
-    db: AsyncSession = Depends(get_db), 
-):
-    statement = select(IssueTable).where(IssueTable.severity == Severity.CRITICAL).where(IssueTable.status == STATUS.OPEN)
-
-    result = await db.execute(statement)
-    issues = result.scalars().all()
-
-    if not issues:
-        raise HTTPException(status_code=404, detail="No critical issues found")
-
-    return issues
+@router.get("/critical", response_model=List[IssueOut])
+async def list_critical_issues(db: AsyncSession = Depends(get_db)):
+    """Dashboard feed: critical issues nobody has resolved yet (Open or In Progress), oldest first."""
+    statement = (
+        select(IssueTable)
+        .where(IssueTable.severity == Severity.CRITICAL)
+        .where(IssueTable.status.in_(issue_service.UNRESOLVED))  # type: ignore[attr-defined]
+        .order_by(IssueTable.created_at)
+    )
+    return (await db.execute(statement)).scalars().all()
 
 
-
-@router.get("/issues/{id}", response_model=IssueOut, status_code=200, tags=["issues"])
-async def get_issue_by_id(
-    id: UUID,
-    db: AsyncSession = Depends(get_db), 
-):
-    issue = await db.get(IssueTable, id)
-
-    if not issue:
-        raise HTTPException(status_code=404, detail="Issue not found")    
-    
+@router.get("/{issue_id}", response_model=IssueOut)
+async def get_issue(issue: IssueTable = Depends(get_issue_or_404)):
     return issue
 
 
-@router.patch("/issues/{id}/status", response_model=IssueOut, status_code=200, tags=["issues"])
-async def update_issue_status(
-    id: UUID,
-    status: Optional[STATUS] = None,
+@router.patch("/{issue_id}/status", response_model=IssueOut)
+async def change_issue_status(
+    body: IssueStatusUpdate,
+    issue: IssueTable = Depends(get_issue_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    update_issue = await db.get(IssueTable, id)
-    if not update_issue:
-        raise HTTPException(status_code=404, detail="Issue not found")
-
-    #the user wants to update the status of the issue. But if the issue they are trying to update is closed, they cant update it anymore.
-    #if the issue is in progress, you cant go back to open, you can only go to resolved or closed.
-    # if you are in resolved, you cant go back to open, you can only go to closed or back to in progress, if the fix wasnt done properly after a review.
-    if update_issue.status == STATUS.CLOSED and status != STATUS.OPEN: # i am putting this condition for status open becuase i can test in my development environment, later will change this.
-        raise HTTPException(status_code=400, detail="You cant update a closed issue, please create a new issue instead")
-    if update_issue.status == STATUS.INPROGRESS and status == STATUS.CLOSED:
-        raise HTTPException(status_code=400, detail="You cant update an in progress issue directly to closed, it needs to be resolved first")
-    if update_issue.status == STATUS.RESOLVED and status == STATUS.OPEN:
-        raise HTTPException(status_code=400, detail="You cant update a resolved issue to open, it can only be closed or be set to 'in progress'")
-
-    if status is not None:
-        update_issue.status = status
-        
+    try:
+        issue_service.change_status(issue, body.status)
+    except issue_service.InvalidTransition as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
     await db.commit()
-    await db.refresh(update_issue)    
-    return update_issue
+    await db.refresh(issue)
+    return issue
 
 
-@router.patch("/issues/{id}/assign", response_model=IssueOut, status_code=200, tags=["issues"])
-async def update_issue_assign(
-    id: UUID,
-    assigned_to: str,
+@router.patch("/{issue_id}/assign", response_model=IssueOut)
+async def assign_issue(
+    body: IssueAssign,
+    issue: IssueTable = Depends(get_issue_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    update_issue = await db.get(IssueTable, id)
-    if not update_issue:
-        raise HTTPException(status_code=404, detail="Issue not found")
-
-    update_issue.assigned_to = assigned_to
-
+    issue.assigned_to = body.assigned_to
+    issue.updated_at = utc_now()
     await db.commit()
-    await db.refresh(update_issue)  
-    return update_issue
+    await db.refresh(issue)
+    return issue
