@@ -54,6 +54,7 @@ services:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./app:/app/app   # live code sync for --reload
+      - ./sample_data:/app/sample_data:ro   # demo manuals for: python -m app.seed_demo
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 volumes:

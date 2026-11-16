@@ -335,6 +335,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/equipment/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Equipment Health
+         * @description Health score of every non-retired machine, in 3 queries total (not 3 per machine).
+         *     Declared before /{equipment_id} so "health" is never parsed as an id.
+         */
+        get: operations["list_equipment_health_api_v1_equipment_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/equipment/{equipment_id}": {
         parameters: {
             query?: never;
@@ -875,7 +896,7 @@ export interface components {
             /** Serial Number */
             serial_number: string;
             /** @default active */
-            status: components["schemas"]["app__schemas__equipment__STATUS"];
+            status: components["schemas"]["EquipmentStatus"];
             /**
              * Updated At
              * Format: date-time
@@ -884,9 +905,14 @@ export interface components {
             /** Warranty Expires At */
             warranty_expires_at?: string | null;
         };
+        /**
+         * EquipmentStatus
+         * @enum {string}
+         */
+        EquipmentStatus: "active" | "under maintenance" | "retired";
         /** EquipmentStatusUpdate */
         EquipmentStatusUpdate: {
-            status: components["schemas"]["app__schemas__equipment__STATUS"];
+            status: components["schemas"]["EquipmentStatus"];
         };
         /**
          * EquipmentSummary
@@ -994,15 +1020,20 @@ export interface components {
             /** Resolved At */
             resolved_at?: string | null;
             severity: components["schemas"]["Severity"];
-            status: components["schemas"]["app__schemas__issue__STATUS"];
+            status: components["schemas"]["IssueStatus"];
             /** Title */
             title: string;
             /** Updated At */
             updated_at?: string | null;
         };
+        /**
+         * IssueStatus
+         * @enum {string}
+         */
+        IssueStatus: "Open" | "Resolved" | "Closed" | "In Progress";
         /** IssueStatusUpdate */
         IssueStatusUpdate: {
-            status: components["schemas"]["app__schemas__issue__STATUS"];
+            status: components["schemas"]["IssueStatus"];
         };
         /**
          * LogType
@@ -1237,16 +1268,6 @@ export interface components {
             /** Error Type */
             type: string;
         };
-        /**
-         * STATUS
-         * @enum {string}
-         */
-        app__schemas__equipment__STATUS: "active" | "under maintenance" | "retired";
-        /**
-         * STATUS
-         * @enum {string}
-         */
-        app__schemas__issue__STATUS: "Open" | "Resolved" | "Closed" | "In Progress";
     };
     responses: never;
     parameters: never;
@@ -1819,7 +1840,7 @@ export interface operations {
     list_equipment_api_v1_equipment_get: {
         parameters: {
             query?: {
-                status?: components["schemas"]["app__schemas__equipment__STATUS"] | null;
+                status?: components["schemas"]["EquipmentStatus"] | null;
                 department?: string | null;
                 type?: components["schemas"]["EquipmentType"] | null;
                 /** @description Case-insensitive partial match on name */
@@ -1882,6 +1903,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_equipment_health_api_v1_equipment_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentHealth"][];
                 };
             };
         };
@@ -2211,7 +2252,7 @@ export interface operations {
     list_issues_api_v1_issues_get: {
         parameters: {
             query?: {
-                status?: components["schemas"]["app__schemas__issue__STATUS"] | null;
+                status?: components["schemas"]["IssueStatus"] | null;
                 severity?: components["schemas"]["Severity"] | null;
                 equipment_id?: string | null;
                 assigned_to?: string | null;

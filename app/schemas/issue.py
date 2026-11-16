@@ -13,11 +13,15 @@ class Severity(str, Enum):
     MEDIUM = "Medium"
     LOW = "Low"
 
-class STATUS(str, Enum):
+class IssueStatus(str, Enum):
     OPEN = "Open"
     RESOLVED = "Resolved"
     CLOSED = "Closed"
     INPROGRESS = "In Progress"
+
+
+# Existing code imports STATUS; the class name is what the OpenAPI schema (and the frontend types) use.
+STATUS = IssueStatus
 
 class SharedIssue(SQLModel):
     title: str = Field(max_length=200)

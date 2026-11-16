@@ -59,10 +59,14 @@ class EquipmentType(str, Enum):
     WATER_TREATMENT_SYSTEM = "Water Treatment System"
 
 
-class STATUS(str, Enum):
+class EquipmentStatus(str, Enum):
     ACTIVE = "active"
     UNDER_MAINTENANCE = "under maintenance"
     RETIRED = "retired"
+
+
+# Existing code imports STATUS; the class name is what the OpenAPI schema (and the frontend types) use.
+STATUS = EquipmentStatus
 
 class SharedEquipment(SQLModel):
     # max_length mirrors the VARCHAR sizes in the migrations: too-long input is a 422, not a DB error

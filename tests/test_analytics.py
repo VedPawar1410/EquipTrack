@@ -71,3 +71,11 @@ async def test_dashboard(supervisor, technician, admin, make_equipment):
 @pytest.mark.parametrize("path", ["/analytics/dashboard", "/analytics/equipment/00000000-0000-0000-0000-000000000000/health"])
 async def test_analytics_requires_supervisor(technician, path):
     assert (await technician.get(path)).status_code == 403
+
+
+async def test_health_for_every_machine(technician, admin, make_equipment):
+    sick, fine, retired = [await make_equipment() for _ in range(3)]
+    await issue(technician, sick, "High")
+    await admin.delete(f"/equipment/{retired['id']}")
+    scores = {h["equipment_id"]: h["score"] for h in (await technician.get("/equipment/health")).json()}
+    assert scores == {sick["id"]: 65, fine["id"]: 85}     # no logs on record (-15), High issue (-20); retired excluded

@@ -1,8 +1,11 @@
 "use client";
 
+import { SupervisorDashboard } from "@/components/dashboard/supervisor-dashboard";
+import { TechnicianDashboard } from "@/components/dashboard/technician-dashboard";
 import { PageHeader } from "@/components/layout/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useClientHour } from "@/hooks/use-client-hour";
-import { useMe } from "@/lib/auth";
+import { hasRole, useMe } from "@/lib/auth";
 
 function greetingFor(hour: number | null) {
   if (hour === null) return "Welcome";
@@ -12,10 +15,14 @@ function greetingFor(hour: number | null) {
 export default function DashboardPage() {
   const { data: me } = useMe();
   const greeting = greetingFor(useClientHour());
+  const supervisor = hasRole(me?.role, "supervisor");
   return (
-    <PageHeader
-      title={me ? `${greeting}, ${me.username}` : "Dashboard"}
-      description="Here's what needs attention across the plant."
-    />
+    <>
+      <PageHeader
+        title={me ? `${greeting}, ${me.username}` : "Dashboard"}
+        description={supervisor ? "Here's what needs attention across the plant." : "Your work queue for today."}
+      />
+      {!me ? <Skeleton className="h-96" /> : supervisor ? <SupervisorDashboard /> : <TechnicianDashboard username={me.username} />}
+    </>
   );
 }

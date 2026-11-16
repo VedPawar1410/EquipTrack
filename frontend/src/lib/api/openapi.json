@@ -558,7 +558,7 @@
             "type": "string"
           },
           "status": {
-            "$ref": "#/components/schemas/app__schemas__equipment__STATUS",
+            "$ref": "#/components/schemas/EquipmentStatus",
             "default": "active"
           },
           "updated_at": {
@@ -592,10 +592,19 @@
         "title": "EquipmentOut",
         "type": "object"
       },
+      "EquipmentStatus": {
+        "enum": [
+          "active",
+          "under maintenance",
+          "retired"
+        ],
+        "title": "EquipmentStatus",
+        "type": "string"
+      },
       "EquipmentStatusUpdate": {
         "properties": {
           "status": {
-            "$ref": "#/components/schemas/app__schemas__equipment__STATUS"
+            "$ref": "#/components/schemas/EquipmentStatus"
           }
         },
         "required": [
@@ -921,7 +930,7 @@
             "$ref": "#/components/schemas/Severity"
           },
           "status": {
-            "$ref": "#/components/schemas/app__schemas__issue__STATUS"
+            "$ref": "#/components/schemas/IssueStatus"
           },
           "title": {
             "maxLength": 200,
@@ -953,10 +962,20 @@
         "title": "IssueOut",
         "type": "object"
       },
+      "IssueStatus": {
+        "enum": [
+          "Open",
+          "Resolved",
+          "Closed",
+          "In Progress"
+        ],
+        "title": "IssueStatus",
+        "type": "string"
+      },
       "IssueStatusUpdate": {
         "properties": {
           "status": {
-            "$ref": "#/components/schemas/app__schemas__issue__STATUS"
+            "$ref": "#/components/schemas/IssueStatus"
           }
         },
         "required": [
@@ -1562,25 +1581,6 @@
         ],
         "title": "ValidationError",
         "type": "object"
-      },
-      "app__schemas__equipment__STATUS": {
-        "enum": [
-          "active",
-          "under maintenance",
-          "retired"
-        ],
-        "title": "STATUS",
-        "type": "string"
-      },
-      "app__schemas__issue__STATUS": {
-        "enum": [
-          "Open",
-          "Resolved",
-          "Closed",
-          "In Progress"
-        ],
-        "title": "STATUS",
-        "type": "string"
       }
     },
     "securitySchemes": {
@@ -2453,7 +2453,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/app__schemas__equipment__STATUS"
+                  "$ref": "#/components/schemas/EquipmentStatus"
                 },
                 {
                   "type": "null"
@@ -2612,6 +2612,37 @@
           }
         ],
         "summary": "Create Equipment",
+        "tags": [
+          "equipment"
+        ]
+      }
+    },
+    "/api/v1/equipment/health": {
+      "get": {
+        "description": "Health score of every non-retired machine, in 3 queries total (not 3 per machine).\nDeclared before /{equipment_id} so \"health\" is never parsed as an id.",
+        "operationId": "list_equipment_health_api_v1_equipment_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EquipmentHealth"
+                  },
+                  "title": "Response List Equipment Health Api V1 Equipment Health Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Equipment Health",
         "tags": [
           "equipment"
         ]
@@ -3138,7 +3169,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/app__schemas__issue__STATUS"
+                  "$ref": "#/components/schemas/IssueStatus"
                 },
                 {
                   "type": "null"

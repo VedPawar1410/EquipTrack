@@ -8,7 +8,7 @@ from sqlmodel import select
 from app.core.database import get_db
 from app.dependencies import get_current_user, get_equipment_or_404, require_role
 from app.models.equipment import EquipmentTable
-from app.schemas.analytics import EquipmentSummary
+from app.schemas.analytics import EquipmentHealth, EquipmentSummary
 from app.schemas.common import utc_now
 from app.schemas.equipment import STATUS, EquipmentIn, EquipmentOut, EquipmentStatusUpdate, EquipmentType
 from app.schemas.user import Role
@@ -62,6 +62,13 @@ async def list_equipment(
         statement = statement.where(EquipmentTable.name.ilike(f"%{search}%"))  # type: ignore[union-attr]
     statement = statement.order_by(EquipmentTable.created_at.desc()).offset(offset).limit(limit)  # type: ignore[union-attr]
     return (await db.execute(statement)).scalars().all()
+
+
+@router.get("/health", response_model=List[EquipmentHealth])
+async def list_equipment_health(db: AsyncSession = Depends(get_db)):
+    """Health score of every non-retired machine, in 3 queries total (not 3 per machine).
+    Declared before /{equipment_id} so "health" is never parsed as an id."""
+    return await analytics_service.health_for_all(db)
 
 
 @router.get("/{equipment_id}", response_model=EquipmentOut)
