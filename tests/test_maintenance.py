@@ -69,3 +69,15 @@ async def test_get_log_and_404(technician, equipment):
     log = (await technician.post(f"/equipment/{equipment['id']}/maintenance", json=LOG)).json()
     assert (await technician.get(f"/maintenance/{log['id']}")).json()["created_at"] == log["created_at"]
     assert (await technician.get(f"/maintenance/{ZERO}")).status_code == 404
+
+
+async def test_overdue_lists_machines_past_their_latest_plan(technician, admin, make_equipment):
+    late, fine, retired = [await make_equipment() for _ in range(3)]
+    past, future = str(date.today() - timedelta(days=5)), str(date.today() + timedelta(days=5))
+    await technician.post(f"/equipment/{late['id']}/maintenance", json={**LOG, "performed_at": "2026-01-01", "next_scheduled_at": past})
+    # An old overdue plan superseded by a newer service with a future plan is not overdue.
+    await technician.post(f"/equipment/{fine['id']}/maintenance", json={**LOG, "performed_at": "2026-01-01", "next_scheduled_at": past})
+    await technician.post(f"/equipment/{fine['id']}/maintenance", json={**LOG, "performed_at": str(date.today()), "next_scheduled_at": future})
+    await technician.post(f"/equipment/{retired['id']}/maintenance", json={**LOG, "next_scheduled_at": past})
+    await admin.delete(f"/equipment/{retired['id']}")
+    assert [m["equipment_id"] for m in (await technician.get("/maintenance/overdue")).json()] == [late["id"]]

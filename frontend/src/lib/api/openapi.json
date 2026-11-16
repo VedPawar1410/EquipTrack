@@ -3528,6 +3528,37 @@
         ]
       }
     },
+    "/api/v1/maintenance/overdue": {
+      "get": {
+        "description": "Machines past their planned service date (from each machine's latest log), most overdue first.",
+        "operationId": "list_overdue_maintenance_api_v1_maintenance_overdue_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MaintenanceOut"
+                  },
+                  "title": "Response List Overdue Maintenance Api V1 Maintenance Overdue Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Overdue Maintenance",
+        "tags": [
+          "maintenance"
+        ]
+      }
+    },
     "/api/v1/maintenance/upcoming": {
       "get": {
         "description": "Machines whose current plan (the next_scheduled_at of their LATEST log) falls in the next 30 days.\n\nOne row per machine; retired machines are excluded. Older logs' plans were superseded.",
@@ -3604,6 +3635,59 @@
         "summary": "Get Maintenance Log",
         "tags": [
           "maintenance"
+        ]
+      }
+    },
+    "/api/v1/parts": {
+      "get": {
+        "description": "The whole spare-parts inventory across machines (or only low-stock parts), lowest stock first.",
+        "operationId": "list_all_parts_api_v1_parts_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "low_stock",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Low Stock",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PartOut"
+                  },
+                  "title": "Response List All Parts Api V1 Parts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List All Parts",
+        "tags": [
+          "parts"
         ]
       }
     },

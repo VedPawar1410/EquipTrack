@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { hasRole, useMe } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,9 @@ export function initials(name: string) {
 
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { data: me } = useMe();
+  const hydrated = useHydrated();
+  const { data } = useMe();
+  const me = hydrated ? data : undefined; // see useHydrated
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-5">

@@ -64,6 +64,18 @@ async def upcoming_maintenance(db: AsyncSession) -> list[MaintenanceTable]:
     return list((await db.execute(statement)).scalars().all())
 
 
+async def overdue_maintenance(db: AsyncSession) -> list[MaintenanceTable]:
+    """Machines whose current plan (latest log's next_scheduled_at) is already in the past, most overdue first."""
+    latest = latest_log_per_machine()
+    statement = (
+        select(latest)
+        .where(latest.next_scheduled_at < utc_now())
+        .where(_not_retired(latest))
+        .order_by(latest.next_scheduled_at)
+    )
+    return list((await db.execute(statement)).scalars().all())
+
+
 async def equipment_summary(db: AsyncSession, equipment: EquipmentTable) -> EquipmentSummary:
     async def all_of(statement):
         return list((await db.execute(statement)).scalars().all())

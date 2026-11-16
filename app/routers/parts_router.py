@@ -41,6 +41,16 @@ async def list_parts(
     return (await db.execute(statement)).scalars().all()
 
 
+@router.get("/parts", response_model=List[PartOut])
+async def list_all_parts(low_stock: bool = False, db: AsyncSession = Depends(get_db)):
+    """The whole spare-parts inventory across machines (or only low-stock parts), lowest stock first."""
+    statement = select(PartTable)
+    if low_stock:
+        statement = statement.where(PartTable.quantity_in_stock <= PartTable.reorder_threshold)
+    statement = statement.order_by(PartTable.quantity_in_stock, PartTable.part_name)
+    return (await db.execute(statement)).scalars().all()
+
+
 @router.get("/parts/low-stock", response_model=List[PartOut])
 async def list_low_stock_parts(db: AsyncSession = Depends(get_db)):
     """Parts at or below their reorder threshold (served by the partial index idx_parts_low_stock)."""

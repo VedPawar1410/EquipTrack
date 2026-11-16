@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { api, unwrap } from "@/lib/api/client";
 import { signOut, useMe } from "@/lib/auth";
 
@@ -26,11 +27,13 @@ import { ThemeToggle } from "./theme-toggle";
 
 function Notifications() {
   // Unresolved critical issues: the one thing worth interrupting anyone for.
-  const { data: critical = [] } = useQuery({
+  const hydrated = useHydrated();
+  const { data = [] } = useQuery({
     queryKey: ["issues", "critical"],
     queryFn: async () => unwrap(await api.GET("/api/v1/issues/critical")),
     refetchInterval: 60_000,
   });
+  const critical = hydrated ? data : []; // see useHydrated
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -65,7 +68,9 @@ function Notifications() {
 
 export function Topbar() {
   const router = useRouter();
-  const { data: me } = useMe();
+  const hydrated = useHydrated();
+  const { data } = useMe();
+  const me = hydrated ? data : undefined; // see useHydrated
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">

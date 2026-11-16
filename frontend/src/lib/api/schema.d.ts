@@ -568,6 +568,26 @@ export interface paths {
         patch: operations["change_issue_status_api_v1_issues__issue_id__status_patch"];
         trace?: never;
     };
+    "/api/v1/maintenance/overdue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Overdue Maintenance
+         * @description Machines past their planned service date (from each machine's latest log), most overdue first.
+         */
+        get: operations["list_overdue_maintenance_api_v1_maintenance_overdue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/maintenance/upcoming": {
         parameters: {
             query?: never;
@@ -599,6 +619,26 @@ export interface paths {
         };
         /** Get Maintenance Log */
         get: operations["get_maintenance_log_api_v1_maintenance__log_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List All Parts
+         * @description The whole spare-parts inventory across machines (or only low-stock parts), lowest stock first.
+         */
+        get: operations["list_all_parts_api_v1_parts_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2439,6 +2479,26 @@ export interface operations {
             };
         };
     };
+    list_overdue_maintenance_api_v1_maintenance_overdue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaintenanceOut"][];
+                };
+            };
+        };
+    };
     list_upcoming_maintenance_api_v1_maintenance_upcoming_get: {
         parameters: {
             query?: never;
@@ -2477,6 +2537,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MaintenanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_all_parts_api_v1_parts_get: {
+        parameters: {
+            query?: {
+                low_stock?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartOut"][];
                 };
             };
             /** @description Validation Error */

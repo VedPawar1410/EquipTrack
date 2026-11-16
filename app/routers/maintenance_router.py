@@ -55,6 +55,12 @@ async def list_upcoming_maintenance(db: AsyncSession = Depends(get_db)):
     return await analytics_service.upcoming_maintenance(db)
 
 
+@router.get("/maintenance/overdue", response_model=List[MaintenanceOut])
+async def list_overdue_maintenance(db: AsyncSession = Depends(get_db)):
+    """Machines past their planned service date (from each machine's latest log), most overdue first."""
+    return await analytics_service.overdue_maintenance(db)
+
+
 @router.get("/maintenance/{log_id}", response_model=MaintenanceOut)
 async def get_maintenance_log(log_id: UUID, db: AsyncSession = Depends(get_db)):
     log = await db.get(MaintenanceTable, log_id)

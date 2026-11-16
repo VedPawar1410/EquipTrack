@@ -55,3 +55,11 @@ async def test_concurrent_consumption_never_oversells(technician, part):
     codes = [r.status_code for r in responses]
     assert codes.count(200) == 5 and codes.count(422) == 15
     assert (await technician.get(f"/parts/{part['id']}")).json()["quantity_in_stock"] == 0
+
+
+async def test_list_all_parts_and_low_stock_filter(technician, supervisor, make_equipment, part):
+    other = await make_equipment()
+    await supervisor.post(f"/equipment/{other['id']}/parts", json={"part_name": "Fuse", "quantity_in_stock": 0})
+    everything = (await technician.get("/parts")).json()
+    assert [p["part_name"] for p in everything] == ["Fuse", "Belt drive"]            # lowest stock first
+    assert [p["part_name"] for p in (await technician.get("/parts?low_stock=true")).json()] == ["Fuse"]
