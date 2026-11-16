@@ -59,10 +59,11 @@ async def test_ask_answers_from_sources_with_citations(technician, lathe, use_ch
     assert "[1] Lathe errors" in human.content and "Question: What does E-47 mean?" in human.content
 
 
-async def test_full_width_citations_are_normalised(technician, lathe, use_chat):
-    use_chat(RecordingChat(reply="Encoder fault 【1】."))
+async def test_answer_typography_is_normalised(technician, lathe, use_chat):
+    # Full-width citations and non-breaking hyphens/spaces, as gpt-oss produces them.
+    use_chat(RecordingChat(reply="Order part TL\u2011ENC\u201104 within\u202f2\u202fdays 【1】."))
     body = (await technician.post("/ai/ask", json={"question": "E-47"})).json()
-    assert body["answer"] == "Encoder fault [1]." and body["sources"][0]["cited"] is True
+    assert body["answer"] == "Order part TL-ENC-04 within 2 days [1]." and body["sources"][0]["cited"] is True
 
 
 async def test_nothing_relevant_means_no_llm_call(technician, lathe, use_chat):

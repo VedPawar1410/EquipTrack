@@ -11,7 +11,6 @@ How the test database works:
 Requires Docker (Docker Desktop, Colima or the GitHub Actions runner).
 """
 import os
-import pathlib
 
 # Settings are read at import time, so set test values before importing the app.
 os.environ.setdefault("JWT_SECRET_KEY", "test-only-secret-key-for-the-pytest-suite-0123")
@@ -21,19 +20,10 @@ os.environ.setdefault("EMBEDDING_PROVIDER", "hashing")  # deterministic fake: no
 os.environ["GROQ_API_KEY"] = ""
 os.environ["GEMINI_API_KEY"] = ""
 
-# Colima keeps its Docker socket in the home directory; point the Docker SDK at it if present.
-_colima_socket = pathlib.Path.home() / ".colima" / "default" / "docker.sock"
-if "DOCKER_HOST" not in os.environ and _colima_socket.exists():
-    os.environ["DOCKER_HOST"] = f"unix://{_colima_socket}"
-    os.environ.setdefault("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
-
-import docker  # noqa: E402
 import pytest  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # noqa: E402
-from testcontainers.community.postgres import PostgresContainer  # noqa: E402
-from testcontainers.core.network import Network  # noqa: E402
 
 from app.core.database import get_db, get_session_maker  # noqa: E402
 from app.main import app  # noqa: E402
@@ -41,40 +31,15 @@ from app.models.user import UserTable  # noqa: E402
 from app.schemas.user import Role  # noqa: E402
 from app.services.auth_service import create_access_token, hash_password  # noqa: E402
 from app.services.llm import get_chat_model  # noqa: E402
+from tests.migrated_db import migrated_postgres  # noqa: E402
 
-MIGRATIONS_DIR = pathlib.Path(__file__).resolve().parent.parent / "migrations"
-LIQUIBASE_IMAGE = "liquibase/liquibase:4.29"
 PASSWORD = "Correct-Horse-9"
-
-
-def _run_liquibase(network: Network, pg: PostgresContainer) -> None:
-    client = docker.from_env()
-    container = client.containers.run(
-        LIQUIBASE_IMAGE,
-        command=[
-            "--search-path=/liquibase/changelog", "--changelog-file=changelog.xml",
-            "--url=jdbc:postgresql://db:5432/" + pg.dbname,
-            f"--username={pg.username}", f"--password={pg.password}", "update",
-        ],
-        volumes={str(MIGRATIONS_DIR): {"bind": "/liquibase/changelog", "mode": "ro"}},
-        network=network.name,
-        detach=True,
-    )
-    try:
-        status = container.wait(timeout=180)["StatusCode"]
-        if status != 0:
-            raise RuntimeError("Liquibase update failed:\n" + container.logs().decode()[-4000:])
-    finally:
-        container.remove(force=True)
 
 
 @pytest.fixture(scope="session")
 def database_url():
-    with Network() as network:
-        postgres = PostgresContainer("pgvector/pgvector:pg16", driver="asyncpg").with_network(network).with_network_aliases("db")
-        with postgres as pg:
-            _run_liquibase(network, pg)
-            yield pg.get_connection_url()
+    with migrated_postgres() as url:
+        yield url
 
 
 @pytest.fixture(scope="session")

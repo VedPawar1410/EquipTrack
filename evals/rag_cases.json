@@ -1,0 +1,28 @@
+{
+  "_about": "Questions over sample_data/manuals. machine: lathe | press | compressor | null (no machine filter). expect_doc: file stem that should be retrieved; null means the right answer is a refusal. facts: strings that must appear in a correct answer (case-insensitive).",
+  "cases": [
+    {"id": "lathe-code-exact",      "machine": "lathe", "question": "What does E-47 mean?",                                   "expect_doc": "northfield_tl300_lathe", "facts": ["encoder"]},
+    {"id": "lathe-code-lowercase",  "machine": "lathe", "question": "lathe is showing e47, what should I check?",               "expect_doc": "northfield_tl300_lathe", "facts": ["cable", "isopropyl"]},
+    {"id": "lathe-paraphrase-oil",  "machine": "lathe", "question": "How often should the ways be oiled?",                      "expect_doc": "northfield_tl300_lathe", "facts": ["40"]},
+    {"id": "lathe-oil-grade",       "machine": "lathe", "question": "Which oil do the slideways need?",                         "expect_doc": "northfield_tl300_lathe", "facts": ["VG 68"]},
+    {"id": "lathe-coolant",         "machine": "lathe", "question": "At what pressure does the coolant alarm trigger?",         "expect_doc": "northfield_tl300_lathe", "facts": ["2 bar"]},
+    {"id": "lathe-symptom-noise",   "machine": "lathe", "question": "Spindle makes a grinding noise at high speed",            "expect_doc": "northfield_tl300_lathe", "facts": ["bearing"]},
+    {"id": "lathe-torque",          "machine": "lathe", "question": "What torque for the chuck jaw bolts?",                     "expect_doc": "northfield_tl300_lathe", "facts": ["45"]},
+    {"id": "lathe-warmup",          "machine": "lathe", "question": "How do I warm up the spindle after the weekend?",          "expect_doc": "northfield_tl300_lathe", "facts": ["500", "10 minutes"]},
+    {"id": "lathe-part-number",     "machine": "lathe", "question": "E-47 keeps coming back, which part do I order?",           "expect_doc": "northfield_tl300_lathe", "facts": ["TL-ENC-04"]},
+    {"id": "press-code-clash",      "machine": "press", "question": "What does E-47 mean?",                                     "expect_doc": "northfield_sp800_press", "facts": ["clamp"]},
+    {"id": "press-hydraulic-code",  "machine": "press", "question": "Code H-21 on the press",                                   "expect_doc": "northfield_sp800_press", "facts": ["65"]},
+    {"id": "press-tonnage",         "machine": "press", "question": "What is the maximum tonnage?",                             "expect_doc": "northfield_sp800_press", "facts": ["800"]},
+    {"id": "press-palm-buttons",    "machine": "press", "question": "How quickly must both palm buttons be pressed?",           "expect_doc": "northfield_sp800_press", "facts": ["0.5"]},
+    {"id": "press-symptom-drift",   "machine": "press", "question": "The ram creeps downward when the press is stopped",        "expect_doc": "northfield_sp800_press", "facts": ["counterbalance"]},
+    {"id": "comp-code",             "machine": "compressor", "question": "A-03 alarm, what now?",                              "expect_doc": "northfield_ac55_compressor", "facts": ["110"]},
+    {"id": "comp-filter",           "machine": "compressor", "question": "How often do I replace the intake filter?",           "expect_doc": "northfield_ac55_compressor", "facts": ["2,000"]},
+    {"id": "comp-oil",              "machine": "compressor", "question": "Can I top up with mineral oil?",                      "expect_doc": "northfield_ac55_compressor", "facts": ["synthetic"]},
+    {"id": "comp-condensate",       "machine": "compressor", "question": "When should the tank be drained?",                    "expect_doc": "northfield_ac55_compressor", "facts": ["daily"]},
+    {"id": "loto-steps",            "machine": "lathe", "question": "What is the lockout procedure before maintenance?",       "expect_doc": "plant_lockout_tagout", "facts": ["lock"]},
+    {"id": "loto-removal",          "machine": null,    "question": "Who is allowed to take off someone's lockout lock?",      "expect_doc": "plant_lockout_tagout", "facts": ["only the person"]},
+    {"id": "refuse-offtopic",       "machine": null,    "question": "Who won the football world cup?",                         "expect_doc": null, "facts": []},
+    {"id": "refuse-near-price",     "machine": "lathe", "question": "How much does a new TL-300 lathe cost?",                  "expect_doc": null, "facts": []},
+    {"id": "refuse-unknown-code",   "machine": "lathe", "question": "What does alarm E-99 mean?",                              "expect_doc": null, "facts": []}
+  ]
+}

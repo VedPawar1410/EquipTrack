@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ruff==0.17.5
-      - run: ruff check app tests
+      - run: ruff check app tests evals
 
   test:
     # Pytest starts its own Postgres + Liquibase containers (testcontainers); the runner has Docker.

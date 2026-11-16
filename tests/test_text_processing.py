@@ -22,6 +22,7 @@ from tests.conftest import make_pdf
     ("Code 1047 overload", ["1047"]),
     ("Serviced on 2026-11-16", []),                       # dates are not codes
     ("The spindle vibrates", []),
+    ("Order part TL\u2011ENC\u201104 for E\u201147", ["E47", "TLENC04"]),   # LLM look-alike hyphens
 ])
 def test_extract_codes(text, codes):
     assert extract_codes(text) == codes

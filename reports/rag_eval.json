@@ -1,0 +1,2104 @@
+{
+  "date": "2026-11-16",
+  "cases": 23,
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "llm": {
+    "order": "groq,gemini",
+    "groq": "openai/gpt-oss-120b",
+    "gemini": "gemini-3.5-flash-lite"
+  },
+  "threshold_sweep": [
+    {
+      "threshold": 0.4,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "refusal_accuracy": 0.3333333333333333,
+      "overall": 0.9130434782608695
+    },
+    {
+      "threshold": 0.45,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "refusal_accuracy": 0.3333333333333333,
+      "overall": 0.9130434782608695
+    },
+    {
+      "threshold": 0.5,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "refusal_accuracy": 0.3333333333333333,
+      "overall": 0.9130434782608695
+    },
+    {
+      "threshold": 0.55,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "refusal_accuracy": 0.3333333333333333,
+      "overall": 0.9130434782608695
+    },
+    {
+      "threshold": 0.6,
+      "hit_at_1": 0.95,
+      "hit_at_3": 0.95,
+      "refusal_accuracy": 0.6666666666666666,
+      "overall": 0.9130434782608695
+    },
+    {
+      "threshold": 0.65,
+      "hit_at_1": 0.9,
+      "hit_at_3": 0.9,
+      "refusal_accuracy": 0.6666666666666666,
+      "overall": 0.8695652173913043
+    },
+    {
+      "threshold": 0.7,
+      "hit_at_1": 0.7,
+      "hit_at_3": 0.7,
+      "refusal_accuracy": 0.6666666666666666,
+      "overall": 0.6956521739130435
+    },
+    {
+      "threshold": 0.75,
+      "hit_at_1": 0.6,
+      "hit_at_3": 0.6,
+      "refusal_accuracy": 0.6666666666666666,
+      "overall": 0.6086956521739131
+    }
+  ],
+  "chosen_threshold": 0.55,
+  "retrieval": [
+    {
+      "id": "lathe-code-exact",
+      "machine": "lathe",
+      "question": "What does E-47 mean?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "encoder"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5576,
+          "matched_by": [
+            "meaning",
+            "code"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5516,
+          "matched_by": [
+            "meaning",
+            "code"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.4616,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.4664,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "lathe-code-lowercase",
+      "machine": "lathe",
+      "question": "lathe is showing e47, what should I check?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "cable",
+        "isopropyl"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.7316,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6796,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6202,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5806,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "lathe-paraphrase-oil",
+      "machine": "lathe",
+      "question": "How often should the ways be oiled?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "40"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5554,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5829,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6193,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5398,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "lathe-oil-grade",
+      "machine": "lathe",
+      "question": "Which oil do the slideways need?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "VG 68"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6558,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.628,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5599,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5397,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "lathe-coolant",
+      "machine": "lathe",
+      "question": "At what pressure does the coolant alarm trigger?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "2 bar"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6574,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6367,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.6027,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5633,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "lathe-symptom-noise",
+      "machine": "lathe",
+      "question": "Spindle makes a grinding noise at high speed",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "bearing"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.7591,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.7273,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6455,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5446,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "lathe-torque",
+      "machine": "lathe",
+      "question": "What torque for the chuck jaw bolts?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "45"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6587,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5906,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.603,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5267,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "lathe-warmup",
+      "machine": "lathe",
+      "question": "How do I warm up the spindle after the weekend?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "500",
+        "10 minutes"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.7118,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6753,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6409,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.578,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "lathe-part-number",
+      "machine": "lathe",
+      "question": "E-47 keeps coming back, which part do I order?",
+      "expect_doc": "northfield_tl300_lathe",
+      "facts": [
+        "TL-ENC-04"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6823,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.7172,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5766,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5535,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "press-code-clash",
+      "machine": "press",
+      "question": "What does E-47 mean?",
+      "expect_doc": "northfield_sp800_press",
+      "facts": [
+        "clamp"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.5264,
+          "matched_by": [
+            "meaning",
+            "code"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.4664,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.417,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_sp800_press",
+          "plant_lockout_tagout",
+          "northfield_sp800_press"
+        ],
+        "0.45": [
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_sp800_press"
+        ],
+        "0.55": [
+          "northfield_sp800_press"
+        ],
+        "0.6": [
+          "northfield_sp800_press"
+        ],
+        "0.65": [
+          "northfield_sp800_press"
+        ],
+        "0.7": [
+          "northfield_sp800_press"
+        ],
+        "0.75": [
+          "northfield_sp800_press"
+        ]
+      }
+    },
+    {
+      "id": "press-hydraulic-code",
+      "machine": "press",
+      "question": "Code H-21 on the press",
+      "expect_doc": "northfield_sp800_press",
+      "facts": [
+        "65"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.6362,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.566,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.487,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_sp800_press",
+          "northfield_sp800_press"
+        ],
+        "0.55": [
+          "northfield_sp800_press",
+          "northfield_sp800_press"
+        ],
+        "0.6": [
+          "northfield_sp800_press"
+        ],
+        "0.65": [
+          "northfield_sp800_press"
+        ],
+        "0.7": [
+          "northfield_sp800_press"
+        ],
+        "0.75": [
+          "northfield_sp800_press"
+        ]
+      }
+    },
+    {
+      "id": "press-tonnage",
+      "machine": "press",
+      "question": "What is the maximum tonnage?",
+      "expect_doc": "northfield_sp800_press",
+      "facts": [
+        "800"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.6613,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.4947,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.4703,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_sp800_press"
+        ],
+        "0.55": [
+          "northfield_sp800_press"
+        ],
+        "0.6": [
+          "northfield_sp800_press"
+        ],
+        "0.65": [
+          "northfield_sp800_press"
+        ],
+        "0.7": [
+          "northfield_sp800_press"
+        ],
+        "0.75": [
+          "northfield_sp800_press"
+        ]
+      }
+    },
+    {
+      "id": "press-palm-buttons",
+      "machine": "press",
+      "question": "How quickly must both palm buttons be pressed?",
+      "expect_doc": "northfield_sp800_press",
+      "facts": [
+        "0.5"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.7396,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.5286,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5074,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_sp800_press"
+        ],
+        "0.6": [
+          "northfield_sp800_press"
+        ],
+        "0.65": [
+          "northfield_sp800_press"
+        ],
+        "0.7": [
+          "northfield_sp800_press"
+        ],
+        "0.75": []
+      }
+    },
+    {
+      "id": "press-symptom-drift",
+      "machine": "press",
+      "question": "The ram creeps downward when the press is stopped",
+      "expect_doc": "northfield_sp800_press",
+      "facts": [
+        "counterbalance"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.7041,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.6303,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5237,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_sp800_press",
+          "northfield_sp800_press"
+        ],
+        "0.6": [
+          "northfield_sp800_press",
+          "northfield_sp800_press"
+        ],
+        "0.65": [
+          "northfield_sp800_press"
+        ],
+        "0.7": [
+          "northfield_sp800_press"
+        ],
+        "0.75": []
+      }
+    },
+    {
+      "id": "comp-code",
+      "machine": "compressor",
+      "question": "A-03 alarm, what now?",
+      "expect_doc": "northfield_ac55_compressor",
+      "facts": [
+        "110"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.6152,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5676,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.5369,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout",
+          "northfield_ac55_compressor"
+        ],
+        "0.45": [
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout",
+          "northfield_ac55_compressor"
+        ],
+        "0.5": [
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout",
+          "northfield_ac55_compressor"
+        ],
+        "0.55": [
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.6": [
+          "northfield_ac55_compressor"
+        ],
+        "0.65": [
+          "northfield_ac55_compressor"
+        ],
+        "0.7": [
+          "northfield_ac55_compressor"
+        ],
+        "0.75": [
+          "northfield_ac55_compressor"
+        ]
+      }
+    },
+    {
+      "id": "comp-filter",
+      "machine": "compressor",
+      "question": "How often do I replace the intake filter?",
+      "expect_doc": "northfield_ac55_compressor",
+      "facts": [
+        "2,000"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.589,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.6591,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5811,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.6": [
+          "northfield_ac55_compressor"
+        ],
+        "0.65": [
+          "northfield_ac55_compressor"
+        ],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "comp-oil",
+      "machine": "compressor",
+      "question": "Can I top up with mineral oil?",
+      "expect_doc": "northfield_ac55_compressor",
+      "facts": [
+        "synthetic"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.5854,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.5196,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5117,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_ac55_compressor"
+        ],
+        "0.6": [],
+        "0.65": [],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "comp-condensate",
+      "machine": "compressor",
+      "question": "When should the tank be drained?",
+      "expect_doc": "northfield_ac55_compressor",
+      "facts": [
+        "daily"
+      ],
+      "hits": [
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.6974,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": true
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.6254,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5918,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.55": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor",
+          "plant_lockout_tagout"
+        ],
+        "0.6": [
+          "northfield_ac55_compressor",
+          "northfield_ac55_compressor"
+        ],
+        "0.65": [
+          "northfield_ac55_compressor"
+        ],
+        "0.7": [
+          "northfield_ac55_compressor"
+        ],
+        "0.75": [
+          "northfield_ac55_compressor"
+        ]
+      }
+    },
+    {
+      "id": "loto-steps",
+      "machine": "lathe",
+      "question": "What is the lockout procedure before maintenance?",
+      "expect_doc": "plant_lockout_tagout",
+      "facts": [
+        "lock"
+      ],
+      "hits": [
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.7841,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6108,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6091,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5865,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.45": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.5": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.55": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "plant_lockout_tagout"
+        ],
+        "0.7": [
+          "plant_lockout_tagout"
+        ],
+        "0.75": [
+          "plant_lockout_tagout"
+        ]
+      }
+    },
+    {
+      "id": "loto-removal",
+      "machine": null,
+      "question": "Who is allowed to take off someone's lockout lock?",
+      "expect_doc": "plant_lockout_tagout",
+      "facts": [
+        "only the person"
+      ],
+      "hits": [
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.699,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.519,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.572,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.5222,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.4972,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.4892,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.4849,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.4784,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "northfield_ac55_compressor"
+        ],
+        "0.45": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_sp800_press",
+          "northfield_sp800_press",
+          "northfield_ac55_compressor"
+        ],
+        "0.5": [
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe",
+          "northfield_sp800_press",
+          "northfield_sp800_press"
+        ],
+        "0.55": [
+          "plant_lockout_tagout",
+          "northfield_sp800_press"
+        ],
+        "0.6": [
+          "plant_lockout_tagout"
+        ],
+        "0.65": [
+          "plant_lockout_tagout"
+        ],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "refuse-offtopic",
+      "machine": null,
+      "question": "Who won the football world cup?",
+      "expect_doc": null,
+      "facts": [],
+      "hits": [
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.3857,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_sp800_press",
+          "similarity": 0.371,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.2986,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.2944,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.2915,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.2819,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.2814,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_ac55_compressor",
+          "similarity": 0.272,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [],
+        "0.45": [],
+        "0.5": [],
+        "0.55": [],
+        "0.6": [],
+        "0.65": [],
+        "0.7": [],
+        "0.75": []
+      }
+    },
+    {
+      "id": "refuse-near-price",
+      "machine": "lathe",
+      "question": "How much does a new TL-300 lathe cost?",
+      "expect_doc": null,
+      "facts": [],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.6664,
+          "matched_by": [
+            "meaning",
+            "code",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5762,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5695,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.4833,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [
+          "northfield_tl300_lathe"
+        ],
+        "0.65": [
+          "northfield_tl300_lathe"
+        ],
+        "0.7": [
+          "northfield_tl300_lathe"
+        ],
+        "0.75": [
+          "northfield_tl300_lathe"
+        ]
+      }
+    },
+    {
+      "id": "refuse-unknown-code",
+      "machine": "lathe",
+      "question": "What does alarm E-99 mean?",
+      "expect_doc": null,
+      "facts": [],
+      "hits": [
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5549,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.493,
+          "matched_by": [
+            "meaning",
+            "words"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "plant_lockout_tagout",
+          "similarity": 0.5392,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        },
+        {
+          "doc": "northfield_tl300_lathe",
+          "similarity": 0.5382,
+          "matched_by": [
+            "meaning"
+          ],
+          "all_words": false
+        }
+      ],
+      "kept": {
+        "0.4": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.45": [
+          "northfield_tl300_lathe",
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.5": [
+          "northfield_tl300_lathe",
+          "plant_lockout_tagout",
+          "northfield_tl300_lathe"
+        ],
+        "0.55": [
+          "northfield_tl300_lathe"
+        ],
+        "0.6": [],
+        "0.65": [],
+        "0.7": [],
+        "0.75": []
+      }
+    }
+  ],
+  "answers": [
+    {
+      "id": "lathe-code-exact",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 1028,
+      "answer": "E-47 indicates a spindle encoder fault \u2013 the controller has lost the spindle position signal, usually due to a loose encoder cable or coolant contamination on the encoder disc[1][2].  \n\n**Procedure:**  \n1. Power down the machine.  \n2. Check and reseat the encoder cable connector at the rear of the headstock.  \n3. Clean the encoder disc with isopropyl alcohol.  \n4. Restart the machine.  \n5. If E-47 recurs within one shift, replace the encoder cable (part TL-ENC-04)."
+    },
+    {
+      "id": "lathe-code-lowercase",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 1525,
+      "answer": "E-47 indicates a spindle encoder fault \u2013 the controller has lost the spindle-position signal, usually due to a loose encoder cable or contamination on the encoder disc[1].  \n\n**Check and correct the following:**  \n1. Power down the lathe.  \n2. Inspect the encoder cable connector at the rear of the headstock and reseat it if loose.  \n3. Clean the encoder disc with isopropyl alcohol to remove any coolant residue.  \n4. Power up and restart the machine.  \n5. If the fault returns within one shift, replace the encoder cable (part TL-ENC-04)[2]."
+    },
+    {
+      "id": "lathe-paraphrase-oil",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 613,
+      "answer": "The ways should be lubricated every 40 operating hours. [3]"
+    },
+    {
+      "id": "lathe-oil-grade",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 745,
+      "answer": "The slideways are lubricated with ISO VG 68 way oil. [1]"
+    },
+    {
+      "id": "lathe-coolant",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 855,
+      "answer": "The coolant alarm (E-12) triggers when coolant pressure stays below 2 bar for more than 10 seconds [1]."
+    },
+    {
+      "id": "lathe-symptom-noise",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 1186,
+      "answer": "The grinding noise at high speed indicates worn spindle bearings[1].  \n\n**Procedure**  \n1. Stop the spindle and allow it to cool (do not run if head-stock housing exceeds 60 \u00b0C)[1].  \n2. Measure spindle run-out with a dial indicator; if total indicated run-out is greater than 0.01 mm, the bearings are out of tolerance[1].  \n3. Arrange for a qualified technician to replace the spindle bearings[1]."
+    },
+    {
+      "id": "lathe-torque",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 576,
+      "answer": "45 N\u00b7m, tightened in a crosswise pattern. [1]"
+    },
+    {
+      "id": "lathe-warmup",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 916,
+      "answer": "Warm the spindle by running it at 500 RPM for 10 minutes, then increase to 1 500 RPM for 5 minutes before starting cuts[1].  \n\n**Steps**  \n1. Power up the lathe after the weekend shutdown.  \n2. Set spindle speed to 500 RPM and run for 10 minutes.  \n3. Increase spindle speed to 1 500 RPM and run for 5 minutes.  \n4. Proceed with normal cutting operations."
+    },
+    {
+      "id": "lathe-part-number",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 1142,
+      "answer": "The E-47 code indicates a spindle encoder fault; if it recurs you should replace the encoder cable (part TL-ENC-04) [1][2]."
+    },
+    {
+      "id": "press-code-clash",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 815,
+      "answer": "E-47 means \u201cDie clamp open\u201d \u2013 one or more hydraulic die clamps are not clamped, preventing the press from cycling[1].  \n**Action:** close all die clamps from the clamp panel and confirm every clamp indicator is green before attempting to cycle the press[1]."
+    },
+    {
+      "id": "press-hydraulic-code",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 715,
+      "answer": "H-21 means the hydraulic oil is over-temperature (above 65 \u00b0C) [1].\n\n**What to do:**  \n1. Stop production.  \n2. Verify the oil-cooler fan is running.  \n3. Clean the cooler fins if dirty.  \n4. Check the oil level in the sight glass."
+    },
+    {
+      "id": "press-tonnage",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 495,
+      "answer": "The maximum tonnage is 800 tons [1]."
+    },
+    {
+      "id": "press-palm-buttons",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 454,
+      "answer": "Both palm buttons must be pressed within 0.5 seconds of each other[1]."
+    },
+    {
+      "id": "press-symptom-drift",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 850,
+      "answer": "The ram drifting down while stopped means the counterbalance valve is leaking[1].  \n1. Block the ram with the safety blocks.  \n2. Arrange for the counterbalance valve to be inspected and resealed.  \n3. If drift exceeds 5 mm in 10 minutes, treat as a stop-work condition."
+    },
+    {
+      "id": "comp-code",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 615,
+      "answer": "A-03 means the discharge temperature is too high (air > 110 \u00b0C) and the unit will stop at 115 \u00b0C[1].  \n\n**What to do:**  \n1. Check the ambient temperature around the compressor[1].  \n2. Clean the oil cooler[1].  \n3. Check the oil level[1]."
+    },
+    {
+      "id": "comp-filter",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 1006,
+      "answer": "Replace the air intake filter every 2,000 operating hours (or sooner in dusty conditions) [1]."
+    },
+    {
+      "id": "comp-oil",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 594,
+      "answer": "No \u2013 you must use only the specified Northfield synthetic oil and never mix mineral oil. [1]"
+    },
+    {
+      "id": "comp-condensate",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 841,
+      "answer": "The condensate should be drained from the air receiver tank daily, at the start of each shift, using the manual drain valve. [1]"
+    },
+    {
+      "id": "loto-steps",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 963,
+      "answer": "The lockout/tagout procedure is: notify the operator and supervisor, shut the machine down, isolate all energy sources, apply personal locks and tags, then release and verify zero stored energy [1].\n\n**Steps**  \n1. Notify the operator and supervisor that maintenance is about to start. [1]  \n2. Shut the machine down using its normal stop control. [1]  \n3. Isolate every energy source (electrical disconnect, hydraulic and pneumatic supply, stored mechanical energy). [1]  \n4. Attach your personal lock and a tag with your name and the date to each isolation point. [1]  \n5. Release stored energy (bleed air and hydraulic pressure, block raised parts) and verify zero energy by trying the start control. [1]"
+    },
+    {
+      "id": "loto-removal",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": false,
+      "correct": true,
+      "cited": true,
+      "latency_ms": 1079,
+      "answer": "Only the person who applied the lock may remove it; if that person has left the site, the supervisor may remove it after confirming the person is gone, the machine is safe, and the removal is recorded in the shift log[1].\n\n**Steps for a supervisor to remove another\u2019s lock:**\n1. Verify the original lock holder is not on site.  \n2. Confirm the equipment is safe (no energy sources active).  \n3. Remove the lock and tag.  \n4. Record the removal in the shift log[1]."
+    },
+    {
+      "id": "refuse-offtopic",
+      "mode": "not_found",
+      "model": null,
+      "refused": true,
+      "correct": true,
+      "cited": false,
+      "latency_ms": 9,
+      "answer": "The manuals don't cover this."
+    },
+    {
+      "id": "refuse-near-price",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": true,
+      "correct": true,
+      "cited": false,
+      "latency_ms": 418,
+      "answer": "The manuals don't cover this."
+    },
+    {
+      "id": "refuse-unknown-code",
+      "mode": "llm",
+      "model": "openai/gpt-oss-120b",
+      "refused": true,
+      "correct": true,
+      "cited": false,
+      "latency_ms": 604,
+      "answer": "The manuals don't cover this."
+    }
+  ]
+}

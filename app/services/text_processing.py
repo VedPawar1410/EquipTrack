@@ -51,6 +51,17 @@ def extract_pages(content: bytes, content_type: str) -> list[tuple[int | None, s
 _CODE_TOKEN = re.compile(r"(?<![\w-])[A-Za-z0-9][A-Za-z0-9_\-./]*[A-Za-z0-9](?![\w-])|(?<![\w-])[A-Za-z]\d(?![\w-])")
 
 
+_LOOKALIKE = str.maketrans({"\u2010": "-", "\u2011": "-", "\u2212": "-",      # hyphen-like dashes
+                            "\u00a0": " ", "\u202f": " ", "\u2007": " ", "\u2009": " "})  # odd spaces
+
+
+def normalize_typography(text: str) -> str:
+    """Replace look-alike hyphens and spaces with plain ASCII. LLMs emit them ("TL\u2011ENC\u201104"),
+    and a copied part number or code with a non-breaking hyphen matches nothing downstream.
+    En/em dashes used as punctuation are left alone."""
+    return text.translate(_LOOKALIKE)
+
+
 def normalize_code(token: str) -> str:
     """E-47, e47, E_47 and e-47 all become E47, so formatting differences still match exactly."""
     return re.sub(r"[-_./\s]", "", token).upper()
@@ -64,13 +75,14 @@ def _is_code(normalized: str) -> bool:
 def without_codes(text: str) -> str:
     """The words of a query with its codes removed: codes have their own exact-match channel, and
     Postgres full-text would split them into noise like 'e' and '-47'."""
-    return _CODE_TOKEN.sub(lambda m: " " if _is_code(normalize_code(m.group())) else m.group(), text)
+    return _CODE_TOKEN.sub(lambda m: " " if _is_code(normalize_code(m.group())) else m.group(),
+                           normalize_typography(text))
 
 
 def extract_codes(text: str) -> list[str]:
     """Used at BOTH index time and query time: one function, so the two sides can never disagree."""
     codes = set()
-    for token in _CODE_TOKEN.findall(text):
+    for token in _CODE_TOKEN.findall(normalize_typography(text)):
         normalized = normalize_code(token)
         if _is_code(normalized):
             codes.add(normalized)
