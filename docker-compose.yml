@@ -46,6 +46,7 @@ services:
       # Bind-mounted files often don't emit change events inside the container
       # (Colima, Docker Desktop on Windows), so poll for edits instead.
       WATCHFILES_FORCE_POLLING: "true"
+      JWT_SECRET_KEY: local-dev-only-secret-change-me-0123456789
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:

@@ -37,7 +37,6 @@ class SharedMaintenance(SQLModel):
         sa_type=SAEnum(LogType, native_enum=False, create_type=False,
         values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
     )
-    performed_by: str = Field(max_length=100)
     performed_at: UTCDatetime  # TIMESTAMPTZ column; date-only input becomes UTC midnight
     description: str
     duration_minutes: int | None = Field(default=None, gt=0)
@@ -45,11 +44,14 @@ class SharedMaintenance(SQLModel):
     next_scheduled_at: UTCDatetime | None = None
 
 class MaintenanceIn(SharedMaintenance):
-    pass
+    # Who did the work. Defaults to the logged-in user; can be a name (e.g. an outside contractor).
+    performed_by: str | None = Field(default=None, max_length=100)
 
 class MaintenanceOut(SharedMaintenance):
     id: UUID
     equipment_id: UUID
+    performed_by: str
+    performed_by_id: UUID | None = None  # the account that logged it
     created_at: datetime  # read from the row; it used to be generated at response time
 
 

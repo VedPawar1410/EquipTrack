@@ -6,16 +6,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import get_db
-from app.dependencies import get_equipment_or_404
+from app.dependencies import get_current_user, get_equipment_or_404, require_role
 from app.models.equipment import EquipmentTable
 from app.models.part import PartTable
+from app.models.user import UserTable
 from app.schemas.part import PartIn, PartOut, PartQuantityChange
+from app.schemas.user import Role
 from app.services import parts_service
+from app.services.auth_service import NotPermitted
 
-router = APIRouter(tags=["parts"])
+router = APIRouter(tags=["parts"], dependencies=[Depends(get_current_user)])
 
 
-@router.post("/equipment/{equipment_id}/parts", response_model=PartOut, status_code=201)
+@router.post("/equipment/{equipment_id}/parts", response_model=PartOut, status_code=201,
+             dependencies=[Depends(require_role(Role.SUPERVISOR))])
 async def add_part(
     part: PartIn,
     equipment: EquipmentTable = Depends(get_equipment_or_404),
@@ -57,9 +61,15 @@ async def get_part(part_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/parts/{part_id}/quantity", response_model=PartOut)
-async def change_part_quantity(part_id: UUID, body: PartQuantityChange, db: AsyncSession = Depends(get_db)):
+async def change_part_quantity(
+    part_id: UUID, body: PartQuantityChange,
+    user: UserTable = Depends(get_current_user), db: AsyncSession = Depends(get_db),
+):
+    """Technicians consume (negative); restocking (positive) needs a supervisor."""
     try:
-        return await parts_service.adjust_stock(db, part_id, body.quantity_change)
+        return await parts_service.adjust_stock(db, part_id, body.quantity_change, actor=user)
+    except NotPermitted as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except parts_service.PartNotFound:
         raise HTTPException(status_code=404, detail="Part not found")
     except parts_service.InsufficientStock as exc:

@@ -12,9 +12,9 @@ from app.schemas.maintenance import SharedMaintenance
 class MaintenanceTable(SharedMaintenance, table=True):
     __tablename__ = "maintenance_logs"  # type: ignore
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    # CRITICAL: Define the foreign key connection here
-    # Use format: "lowercase_table_name.column_name"
     equipment_id: UUID = Field(foreign_key="equipment.id")
+    performed_by: str = Field(max_length=100)
+    performed_by_id: Optional[UUID] = Field(default=None, foreign_key="users.id")
     created_at: datetime = Field(default_factory=utc_now)
 
     # Connects back to the parent table for ORM usage

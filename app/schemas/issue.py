@@ -25,18 +25,20 @@ class SharedIssue(SQLModel):
         sa_type=SAEnum(Severity, native_enum=False, create_type=False,
         values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
     )
-    reported_by: str = Field(max_length=100)
     error_code: str | None = Field(default=None, max_length=50)
 
 class IssueIn(SharedIssue):
     equipment_id: UUID
-    # you cant assign the issue to a person while creating an issue, you cna only do it after the issue is created, is that right or not, will have to check.
+    # reporter = the logged-in user (set server-side); assignment happens after creation.
 
 class IssueOut(SharedIssue):
     id: UUID
     equipment_id: UUID  
     status: STATUS
+    reported_by: str
+    reported_by_id: Optional[UUID] = None
     assigned_to: Optional[str] = None
+    assigned_to_id: Optional[UUID] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None
@@ -46,4 +48,4 @@ class IssueStatusUpdate(SQLModel):
 
 
 class IssueAssign(SQLModel):
-    assigned_to: str = Field(min_length=1, max_length=100)
+    assigned_to: str = Field(min_length=1, max_length=50, description="Username of an active user")

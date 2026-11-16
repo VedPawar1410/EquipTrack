@@ -7,12 +7,16 @@ from sqlmodel import select
 
 from app.core.database import get_db
 from app.models.equipment import EquipmentTable
+from app.dependencies import get_current_user, require_role
 from app.models.issue import IssueTable
+from app.models.user import UserTable
 from app.schemas.common import utc_now
 from app.schemas.issue import STATUS, IssueAssign, IssueIn, IssueOut, IssueStatusUpdate, Severity
+from app.schemas.user import Role
 from app.services import issue_service
+from app.services.auth_service import NotPermitted
 
-router = APIRouter(prefix="/issues", tags=["issues"])
+router = APIRouter(prefix="/issues", tags=["issues"], dependencies=[Depends(get_current_user)])
 
 
 async def get_issue_or_404(issue_id: UUID, db: AsyncSession = Depends(get_db)) -> IssueTable:
@@ -23,11 +27,12 @@ async def get_issue_or_404(issue_id: UUID, db: AsyncSession = Depends(get_db)) -
 
 
 @router.post("", response_model=IssueOut, status_code=201)
-async def report_issue(issue: IssueIn, db: AsyncSession = Depends(get_db)):
+async def report_issue(issue: IssueIn, user: UserTable = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     # Check the parent first: a bad equipment_id is the client's mistake (404), not a server error.
     if await db.get(EquipmentTable, issue.equipment_id) is None:
         raise HTTPException(status_code=404, detail="Equipment not found")
-    new_issue = IssueTable.model_validate(issue)
+    # The reporter is whoever is logged in, never a client-supplied name.
+    new_issue = IssueTable.model_validate(issue, update={"reported_by": user.username, "reported_by_id": user.id})
     db.add(new_issue)
     await db.commit()
     await db.refresh(new_issue)
@@ -78,24 +83,31 @@ async def get_issue(issue: IssueTable = Depends(get_issue_or_404)):
 async def change_issue_status(
     body: IssueStatusUpdate,
     issue: IssueTable = Depends(get_issue_or_404),
+    user: UserTable = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """Technicians claim and resolve; closing or reopening needs a supervisor."""
     try:
-        issue_service.change_status(issue, body.status)
+        issue_service.change_status(issue, body.status, actor=user)
     except issue_service.InvalidTransition as exc:
         raise HTTPException(status_code=422, detail=str(exc))
+    except NotPermitted as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     await db.commit()
     await db.refresh(issue)
     return issue
 
 
-@router.patch("/{issue_id}/assign", response_model=IssueOut)
+@router.patch("/{issue_id}/assign", response_model=IssueOut, dependencies=[Depends(require_role(Role.SUPERVISOR))])
 async def assign_issue(
     body: IssueAssign,
     issue: IssueTable = Depends(get_issue_or_404),
     db: AsyncSession = Depends(get_db),
 ):
-    issue.assigned_to = body.assigned_to
+    assignee = (await db.execute(select(UserTable).where(UserTable.username == body.assigned_to))).scalar_one_or_none()
+    if assignee is None or not assignee.is_active:
+        raise HTTPException(status_code=422, detail=f"No active user named '{body.assigned_to}'")
+    issue.assigned_to, issue.assigned_to_id = assignee.username, assignee.id
     issue.updated_at = utc_now()
     await db.commit()
     await db.refresh(issue)

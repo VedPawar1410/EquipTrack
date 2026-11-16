@@ -7,21 +7,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import get_db
-from app.dependencies import get_equipment_or_404
+from app.dependencies import get_current_user, get_equipment_or_404
 from app.models.equipment import EquipmentTable
 from app.models.maintenance import MaintenanceTable
+from app.models.user import UserTable
 from app.schemas.maintenance import MaintenanceIn, MaintenanceOut
 
-router = APIRouter(tags=["maintenance"])
+router = APIRouter(tags=["maintenance"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/equipment/{equipment_id}/maintenance", response_model=MaintenanceOut, status_code=201)
 async def log_maintenance(
     maintenance: MaintenanceIn,
     equipment: EquipmentTable = Depends(get_equipment_or_404),
+    user: UserTable = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    log = MaintenanceTable(equipment_id=equipment.id, **maintenance.model_dump())
+    data = maintenance.model_dump()
+    data["performed_by"] = data["performed_by"] or user.username
+    log = MaintenanceTable(equipment_id=equipment.id, performed_by_id=user.id, **data)
     db.add(log)
     await db.commit()
     await db.refresh(log)

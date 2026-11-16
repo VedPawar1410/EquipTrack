@@ -7,12 +7,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import get_db
-from app.dependencies import get_equipment_or_404
+from app.dependencies import get_current_user, get_equipment_or_404, require_role
 from app.models.equipment import EquipmentTable
 from app.schemas.common import utc_now
 from app.schemas.equipment import STATUS, EquipmentIn, EquipmentOut, EquipmentStatusUpdate, EquipmentType
+from app.schemas.user import Role
 
-router = APIRouter(prefix="/equipment", tags=["equipment"])
+# Every route needs a logged-in user (any role can view). Writes add a stricter role below.
+router = APIRouter(prefix="/equipment", tags=["equipment"], dependencies=[Depends(get_current_user)])
+supervisor = [Depends(require_role(Role.SUPERVISOR))]
+admin = [Depends(require_role(Role.ADMIN))]
 
 
 async def _commit_or_409(db: AsyncSession, serial_number: str) -> None:
@@ -24,7 +28,7 @@ async def _commit_or_409(db: AsyncSession, serial_number: str) -> None:
         raise HTTPException(status_code=409, detail=f"Equipment with serial_number '{serial_number}' already exists")
 
 
-@router.post("", response_model=EquipmentOut, status_code=201)
+@router.post("", response_model=EquipmentOut, status_code=201, dependencies=admin)
 async def create_equipment(equipment: EquipmentIn, db: AsyncSession = Depends(get_db)):
     new_equipment = EquipmentTable.model_validate(equipment)
     db.add(new_equipment)
@@ -68,7 +72,7 @@ async def get_equipment_summary(equipment: EquipmentTable = Depends(get_equipmen
     return equipment
 
 
-@router.put("/{equipment_id}", response_model=EquipmentOut)
+@router.put("/{equipment_id}", response_model=EquipmentOut, dependencies=admin)
 async def update_equipment(
     changes: EquipmentIn,
     equipment: EquipmentTable = Depends(get_equipment_or_404),
@@ -81,7 +85,7 @@ async def update_equipment(
     return equipment
 
 
-@router.patch("/{equipment_id}/status", response_model=EquipmentOut)
+@router.patch("/{equipment_id}/status", response_model=EquipmentOut, dependencies=supervisor)
 async def update_equipment_status(
     body: EquipmentStatusUpdate,
     equipment: EquipmentTable = Depends(get_equipment_or_404),
@@ -94,7 +98,7 @@ async def update_equipment_status(
     return equipment
 
 
-@router.delete("/{equipment_id}", status_code=204)
+@router.delete("/{equipment_id}", status_code=204, dependencies=admin)
 async def retire_equipment(
     equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),
@@ -106,7 +110,7 @@ async def retire_equipment(
     return Response(status_code=204)
 
 
-@router.delete("/{equipment_id}/hard", status_code=204)
+@router.delete("/{equipment_id}/hard", status_code=204, dependencies=admin)
 async def hard_delete_equipment(
     equipment: EquipmentTable = Depends(get_equipment_or_404),
     db: AsyncSession = Depends(get_db),

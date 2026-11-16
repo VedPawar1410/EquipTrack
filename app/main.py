@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.routers.auth_router import router as auth_router
 from app.routers.equipment_router import router as endpoints_router
 from app.routers.issue_router import router as issue_router
 from app.routers.maintenance_router import router as maintenance_router
@@ -16,6 +17,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.include_router(auth_router, prefix="/api/v1")
 app.include_router(endpoints_router, prefix="/api/v1")
 app.include_router(maintenance_router, prefix="/api/v1")
 app.include_router(issue_router, prefix="/api/v1")

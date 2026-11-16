@@ -6,3 +6,6 @@ sqlalchemy[asyncio]==2.1.8   # [asyncio] pulls in greenlet, which SQLAlchemy 2.1
 asyncpg==0.32.0
 pydantic==2.14.3
 pydantic-settings==2.16.3
+pwdlib[argon2]==0.4.2         # Argon2id password hashing
+pyjwt==2.15.1                 # JWT access tokens
+python-multipart==0.0.33      # form parsing for the OAuth2 login form
