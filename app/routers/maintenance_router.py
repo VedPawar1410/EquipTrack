@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta, timezone
 from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import between, select
+from sqlmodel import select
 
 from app.core.database import get_db
 from app.dependencies import get_equipment_or_404
@@ -55,16 +55,16 @@ async def get_maintainance_logs(
 async def get_upcoming_maintainance_logs(
     db: AsyncSession = Depends(get_db), 
 ):
-    # 1. Get today's date and the 30-day cutoff date as strings (YYYY-MM-DD)
-    today = datetime.now().date()
-    cutoff = today + timedelta(days=30) # YYYY-MM-DD
+    # next_scheduled_at is TIMESTAMPTZ, so compare against timezone-aware datetimes.
+    # Window: from the start of today (UTC) up to, not including, the start of day 31.
+    start = datetime.combine(datetime.now(timezone.utc).date(), time.min, tzinfo=timezone.utc)
+    end = start + timedelta(days=31)
 
-    # 2. Build the statement matching only the first 10 characters of your data
     statement = (
         select(MaintainanceTable)
-        .where(
-            between(MaintainanceTable.next_scheduled_at, today, cutoff)
-        )
+        .where(MaintainanceTable.next_scheduled_at >= start)
+        .where(MaintainanceTable.next_scheduled_at < end)
+        .order_by(MaintainanceTable.next_scheduled_at)
     )
     result = await db.execute(statement)
 

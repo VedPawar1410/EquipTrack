@@ -1,9 +1,11 @@
-from datetime import date, datetime, timezone
+from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
 from sqlmodel import Enum as SAEnum
 from sqlmodel import Field, SQLModel
+
+from app.schemas.common import UTCDatetime
 
 class LogType(str, Enum):
     # Planned / preventive
@@ -35,19 +37,20 @@ class SharedMaintainance(SQLModel):
         sa_type=SAEnum(LogType, native_enum=False, create_type=False,
         values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
     )
-    performed_by: str
-    performed_at: date
+    performed_by: str = Field(max_length=100)
+    performed_at: UTCDatetime  # TIMESTAMPTZ column; date-only input becomes UTC midnight
     description: str
     duration_minutes: int | None = Field(default=None, gt=0)
     cost_usd: float | None = None
-    next_scheduled_at: date | None = None
+    next_scheduled_at: UTCDatetime | None = None
 
 class MaintainanceIn(SharedMaintainance):
     pass
 
 class MaintainanceOut(SharedMaintainance):
     id: UUID
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    equipment_id: UUID
+    created_at: datetime  # read from the row; it used to be generated at response time
 
 
 

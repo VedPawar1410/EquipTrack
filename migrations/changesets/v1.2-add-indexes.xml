@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  v1.2: indexes for the columns the API filters and joins on.
+  Indexes only change performance, never data, so they are release-safe.
+  Postgres does not index foreign-key columns automatically, so every equipment_id gets one.
+  (On a large production table you would use CREATE INDEX CONCURRENTLY to avoid blocking writes.)
+-->
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+    logicalFilePath="changesets/v1.2-add-indexes.xml">
+
+    <changeSet id="1.2.1-equipment-indexes" author="ved">
+        <createIndex tableName="equipment" indexName="idx_equipment_status"><column name="status"/></createIndex>
+        <createIndex tableName="equipment" indexName="idx_equipment_department"><column name="department"/></createIndex>
+    </changeSet>
+
+    <changeSet id="1.2.2-issues-indexes" author="ved">
+        <createIndex tableName="issues" indexName="idx_issues_status"><column name="status"/></createIndex>
+        <createIndex tableName="issues" indexName="idx_issues_severity"><column name="severity"/></createIndex>
+        <createIndex tableName="issues" indexName="idx_issues_equipment_id"><column name="equipment_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="1.2.3-fk-indexes" author="ved">
+        <createIndex tableName="maintenance_logs" indexName="idx_maintenance_equip_id"><column name="equipment_id"/></createIndex>
+        <createIndex tableName="maintenance_logs" indexName="idx_maintenance_next_scheduled"><column name="next_scheduled_at"/></createIndex>
+        <createIndex tableName="parts" indexName="idx_parts_equipment_id"><column name="equipment_id"/></createIndex>
+        <createIndex tableName="documents" indexName="idx_documents_equip_id"><column name="equipment_id"/></createIndex>
+    </changeSet>
+
+    <changeSet id="1.2.4-parts-low-stock-partial-index" author="ved">
+        <comment>Partial index: only rows at or below their reorder threshold are indexed, so the low-stock query scans just the rows that need attention.</comment>
+        <sql>CREATE INDEX idx_parts_low_stock ON parts (quantity_in_stock) WHERE quantity_in_stock &lt;= reorder_threshold;</sql>
+        <rollback>
+            <sql>DROP INDEX idx_parts_low_stock;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

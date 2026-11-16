@@ -304,4 +304,11 @@
     </changeSet>
 
 
+    <!--
+      Everything above is v1.0 and has already been applied: never edit it.
+      New schema changes go in changesets/, one file per release, included in order.
+    -->
+    <include file="changesets/v1.1-fix-schema-drift.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/v1.2-add-indexes.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID
@@ -19,14 +19,14 @@ class STATUS(str, Enum):
     INPROGRESS = "In Progress"
 
 class SharedIssue(SQLModel):
-    title: str  
+    title: str = Field(max_length=200)
     description: str | None = None
     severity: Severity = Field(
         sa_type=SAEnum(Severity, native_enum=False, create_type=False,
         values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
     )
-    reported_by: str
-    error_code: str | None = None
+    reported_by: str = Field(max_length=100)
+    error_code: str | None = Field(default=None, max_length=50)
 
 class IssueIn(SharedIssue):
     equipment_id: UUID
@@ -35,7 +35,9 @@ class IssueIn(SharedIssue):
 class IssueOut(SharedIssue):
     id: UUID
     equipment_id: UUID  
+    status: STATUS
     assigned_to: Optional[str] = None
-    created_at: date
-    resolved_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    resolved_at: Optional[datetime] = None
 

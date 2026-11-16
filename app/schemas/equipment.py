@@ -66,19 +66,20 @@ class STATUS(str, Enum):
     RETIRED = "retired"
 
 class SharedEquipment(SQLModel):
-    name: str
-    model_number: str | None = None
-    serial_number: str
+    # max_length mirrors the VARCHAR sizes in the migrations: too-long input is a 422, not a DB error
+    name: str = Field(max_length=100)
+    model_number: str | None = Field(default=None, max_length=50)
+    serial_number: str = Field(max_length=100)
     # This keeps validation in Python, but saves as standard VARCHAR in Postgres
     # https://share.google/aimode/5s3vd8NgXmbcTjTVj
     equipment_type: EquipmentType = Field(
         sa_type=SAEnum(EquipmentType, native_enum=False, create_type=False, 
         values_callable=lambda enum_cls: [e.value for e in enum_cls]) # type: ignore
     )
-    location: str
-    department: str
-    purchased_at: date
-    warranty_expires_at: date
+    location: str = Field(max_length=100)
+    department: str = Field(max_length=100)
+    purchased_at: date | None = None         # unknown for older machines
+    warranty_expires_at: date | None = None
 
     # model_config = ConfigDict
     # FIX: Use standard class Config for SQLModel compatibility

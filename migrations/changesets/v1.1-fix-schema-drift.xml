@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  v1.1: fix mismatches between the v1.0 schema and the application models.
+
+  Rule: changesets that have already run are never edited (Liquibase stores a checksum
+  and fails `update` if an applied changeset changes). Every fix is a NEW changeset.
+  Each one is additive or widening, so app code running against the old schema keeps working.
+-->
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+    logicalFilePath="changesets/v1.1-fix-schema-drift.xml">
+
+    <changeSet id="1.1.1-drop-bogus-department-default" author="ved">
+        <comment>equipment.department defaulted to 'active' (copy-paste from status). Department is always supplied, so no default.</comment>
+        <dropDefaultValue tableName="equipment" columnName="department"/>
+        <rollback>
+            <addDefaultValue tableName="equipment" columnName="department" defaultValue="active"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1.1.2-documents-equipment-id-nullable" author="ved">
+        <comment>The FK says ON DELETE SET NULL (general documents survive equipment deletion), which is impossible while the column is NOT NULL. Relaxing NOT NULL is release-safe.</comment>
+        <dropNotNullConstraint tableName="documents" columnName="equipment_id" columnDataType="UUID"/>
+        <rollback>
+            <addNotNullConstraint tableName="documents" columnName="equipment_id" columnDataType="UUID"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1.1.3-documents-uploaded-by-fix" author="ved">
+        <comment>uploaded_by was NOT NULL with the string default 'false' (meant for is_indexed). Make it a nullable name with no default; is_indexed gets the FALSE default it was meant to have.</comment>
+        <dropDefaultValue tableName="documents" columnName="uploaded_by"/>
+        <dropNotNullConstraint tableName="documents" columnName="uploaded_by" columnDataType="varchar(100)"/>
+        <sql>UPDATE documents SET uploaded_by = NULL WHERE uploaded_by = 'false';</sql>
+        <addDefaultValue tableName="documents" columnName="is_indexed" defaultValueBoolean="false"/>
+        <rollback>
+            <dropDefaultValue tableName="documents" columnName="is_indexed"/>
+            <sql>UPDATE documents SET uploaded_by = 'false' WHERE uploaded_by IS NULL;</sql>
+            <addNotNullConstraint tableName="documents" columnName="uploaded_by" columnDataType="varchar(100)"/>
+            <addDefaultValue tableName="documents" columnName="uploaded_by" defaultValue="false"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1.1.4-issues-resolved-at-timestamptz" author="ved">
+        <comment>resolved_at was DATE while every other timestamp is TIMESTAMPTZ. DATE to TIMESTAMPTZ is a widening, lossless cast, and the column has never been written by the app, so the type change is safe here. (On a busy table you would add a new column, backfill and switch instead.)</comment>
+        <sql>ALTER TABLE issues ALTER COLUMN resolved_at TYPE TIMESTAMPTZ USING resolved_at::timestamptz;</sql>
+        <rollback>
+            <sql>ALTER TABLE issues ALTER COLUMN resolved_at TYPE DATE USING resolved_at::date;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1.1.5-fix-water-treatment-typo" author="ved">
+        <comment>The v1.0 enum-casing fix wrote 'Water   Treatment System' (three spaces). Normalise to the enum value the app validates.</comment>
+        <sql>UPDATE equipment SET equipment_type = 'Water Treatment System' WHERE equipment_type = 'Water   Treatment System';</sql>
+        <rollback/>
+    </changeSet>
+
+    <changeSet id="1.1.6-parts-reorder-threshold-check" author="ved">
+        <comment>A negative reorder threshold makes no sense; enforce it in the database as well as the API.</comment>
+        <sql>ALTER TABLE parts ADD CONSTRAINT reorder_threshold_check CHECK (reorder_threshold &gt;= 0);</sql>
+        <rollback>
+            <sql>ALTER TABLE parts DROP CONSTRAINT reorder_threshold_check;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
