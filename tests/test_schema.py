@@ -72,3 +72,17 @@ async def test_low_stock_query_uses_partial_index(engine):
         plan = "\n".join(r[0] for r in await conn.execute(
             text("EXPLAIN SELECT * FROM parts WHERE quantity_in_stock <= reorder_threshold")))
     assert "idx_parts_low_stock" in plan
+
+
+async def test_latest_log_per_machine_uses_composite_index(engine):
+    from sqlalchemy.dialects import postgresql as pg
+    from sqlmodel import select
+
+    from app.services.analytics_service import latest_log_per_machine
+
+    latest = latest_log_per_machine()
+    sql = str(select(latest).compile(dialect=pg.dialect(), compile_kwargs={"literal_binds": True}))
+    async with engine.connect() as conn:
+        await conn.execute(text("SET enable_seqscan = off"))
+        plan = "\n".join(r[0] for r in await conn.execute(text("EXPLAIN " + sql)))
+    assert "DISTINCT ON" in sql.upper() and "idx_maintenance_equip_performed" in plan

@@ -8,9 +8,11 @@ from sqlmodel import select
 from app.core.database import get_db
 from app.dependencies import get_current_user, get_equipment_or_404, require_role
 from app.models.equipment import EquipmentTable
+from app.schemas.analytics import EquipmentSummary
 from app.schemas.common import utc_now
 from app.schemas.equipment import STATUS, EquipmentIn, EquipmentOut, EquipmentStatusUpdate, EquipmentType
 from app.schemas.user import Role
+from app.services import analytics_service
 
 # Every route needs a logged-in user (any role can view). Writes add a stricter role below.
 router = APIRouter(prefix="/equipment", tags=["equipment"], dependencies=[Depends(get_current_user)])
@@ -67,10 +69,16 @@ async def get_equipment(equipment: EquipmentTable = Depends(get_equipment_or_404
     return equipment
 
 
-@router.get("/{equipment_id}/summary", response_model=EquipmentOut)
-async def get_equipment_summary(equipment: EquipmentTable = Depends(get_equipment_or_404)):
-    # TODO(step 9): full snapshot (recent logs, open issues, parts, documents, health score)
-    return equipment
+@router.get("/{equipment_id}/summary", response_model=EquipmentSummary)
+async def get_equipment_summary(
+    equipment: EquipmentTable = Depends(get_equipment_or_404),
+    db: AsyncSession = Depends(get_db),
+):
+    """Full snapshot for the detail page: last 5 logs, open issues, parts, documents and health score.
+
+    Health is visible to every role: it is derived only from data a technician can already see.
+    """
+    return await analytics_service.equipment_summary(db, equipment)
 
 
 @router.put("/{equipment_id}", response_model=EquipmentOut, dependencies=admin)

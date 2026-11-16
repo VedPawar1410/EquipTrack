@@ -1,4 +1,3 @@
-from datetime import datetime, time, timedelta, timezone
 from typing import List
 from uuid import UUID
 
@@ -12,6 +11,7 @@ from app.models.equipment import EquipmentTable
 from app.models.maintenance import MaintenanceTable
 from app.models.user import UserTable
 from app.schemas.maintenance import MaintenanceIn, MaintenanceOut
+from app.services import analytics_service
 
 router = APIRouter(tags=["maintenance"], dependencies=[Depends(get_current_user)])
 
@@ -48,17 +48,11 @@ async def list_maintenance_logs(
 
 @router.get("/maintenance/upcoming", response_model=List[MaintenanceOut])
 async def list_upcoming_maintenance(db: AsyncSession = Depends(get_db)):
-    # next_scheduled_at is TIMESTAMPTZ, so compare against timezone-aware datetimes.
-    # Window: from the start of today (UTC) up to, not including, the start of day 31.
-    start = datetime.combine(datetime.now(timezone.utc).date(), time.min, tzinfo=timezone.utc)
-    end = start + timedelta(days=31)
-    statement = (
-        select(MaintenanceTable)
-        .where(MaintenanceTable.next_scheduled_at >= start)  # type: ignore[operator]
-        .where(MaintenanceTable.next_scheduled_at < end)  # type: ignore[operator]
-        .order_by(MaintenanceTable.next_scheduled_at)
-    )
-    return (await db.execute(statement)).scalars().all()
+    """Machines whose current plan (the next_scheduled_at of their LATEST log) falls in the next 30 days.
+
+    One row per machine; retired machines are excluded. Older logs' plans were superseded.
+    """
+    return await analytics_service.upcoming_maintenance(db)
 
 
 @router.get("/maintenance/{log_id}", response_model=MaintenanceOut)

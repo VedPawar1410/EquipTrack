@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  v1.4: index for "latest maintenance log per machine" (DISTINCT ON equipment_id ORDER BY performed_at DESC),
+  used by the health score, the dashboard and /maintenance/upcoming.
+  A composite index's leftmost column also serves plain equipment_id lookups, so the older
+  single-column idx_maintenance_equip_id becomes redundant and is dropped (an index drop never touches data).
+-->
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+    logicalFilePath="changesets/v1.4-maintenance-latest-index.xml">
+
+    <changeSet id="1.4.1-maintenance-equipment-performed-index" author="ved">
+        <sql>CREATE INDEX idx_maintenance_equip_performed ON maintenance_logs (equipment_id, performed_at DESC);</sql>
+        <dropIndex tableName="maintenance_logs" indexName="idx_maintenance_equip_id"/>
+        <rollback>
+            <createIndex tableName="maintenance_logs" indexName="idx_maintenance_equip_id"><column name="equipment_id"/></createIndex>
+            <sql>DROP INDEX idx_maintenance_equip_performed;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -311,5 +311,6 @@
     <include file="changesets/v1.1-fix-schema-drift.xml" relativeToChangelogFile="true"/>
     <include file="changesets/v1.2-add-indexes.xml" relativeToChangelogFile="true"/>
     <include file="changesets/v1.3-create-users.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/v1.4-maintenance-latest-index.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -42,13 +42,27 @@ async def test_empty_history_is_200(technician, equipment):
     assert (await technician.get(f"/equipment/{equipment['id']}/maintenance")).json() == []
 
 
-async def test_upcoming_window_includes_today_through_day_30(technician, equipment):
+async def test_upcoming_window_includes_today_through_day_30(technician, make_equipment):
     today = date.today()
-    for offset in (-1, 0, 30, 31):
-        await technician.post(f"/equipment/{equipment['id']}/maintenance",
+    for offset in (-1, 0, 30, 31):                  # one machine per planned date
+        machine = await make_equipment()
+        await technician.post(f"/equipment/{machine['id']}/maintenance",
                               json={**LOG, "description": f"d{offset}", "next_scheduled_at": str(today + timedelta(days=offset))})
     got = [log["description"] for log in (await technician.get("/maintenance/upcoming")).json()]
     assert got == ["d0", "d30"]
+
+
+async def test_upcoming_uses_only_each_machines_latest_plan(technician, admin, make_equipment):
+    machine, retired = await make_equipment(), await make_equipment()
+    soon = str(date.today() + timedelta(days=5))
+    # An old service planned a visit soon, but a newer service moved the plan out to 90 days: not upcoming.
+    await technician.post(f"/equipment/{machine['id']}/maintenance", json={**LOG, "performed_at": "2026-01-01", "next_scheduled_at": soon})
+    await technician.post(f"/equipment/{machine['id']}/maintenance",
+                          json={**LOG, "performed_at": str(date.today()), "next_scheduled_at": str(date.today() + timedelta(days=90))})
+    # Retired machines are never "due".
+    await technician.post(f"/equipment/{retired['id']}/maintenance", json={**LOG, "next_scheduled_at": soon})
+    await admin.delete(f"/equipment/{retired['id']}")
+    assert (await technician.get("/maintenance/upcoming")).json() == []
 
 
 async def test_get_log_and_404(technician, equipment):

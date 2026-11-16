@@ -117,8 +117,8 @@ async def test_role_is_checked_before_existence(technician):
     assert (await technician.put(f"/equipment/{ZERO}", json=EQUIPMENT)).status_code == 403
 
 
-async def test_filter_by_status_and_summary(technician, supervisor, make_equipment):
+async def test_filter_by_status(technician, supervisor, make_equipment):
     a, _ = await make_equipment(), await make_equipment()
     await supervisor.patch(f"/equipment/{a['id']}/status", json={"status": "under maintenance"})
     assert [e["id"] for e in (await technician.get("/equipment?status=under maintenance")).json()] == [a["id"]]
-    assert (await technician.get(f"/equipment/{a['id']}/summary")).json()["id"] == a["id"]
+    assert (await technician.get(f"/equipment/{a['id']}/summary")).json()["equipment"]["id"] == a["id"]
