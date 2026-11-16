@@ -69,3 +69,43 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose down -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  api-contract:
+    # The frontend's TypeScript types are generated from the API's OpenAPI schema. If a backend change
+    # alters the contract without the types being regenerated (and the frontend type-checked), fail here.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - run: python scripts/export_openapi.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci && npm run gen:api
+        working-directory: frontend
+      - name: Committed contract matches the API
+        run: git diff --exit-code frontend/src/lib/api/openapi.json frontend/src/lib/api/schema.d.ts
