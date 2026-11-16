@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlmodel import Enum as SAEnum
 from sqlmodel import Field, SQLModel
 
+
 class Severity(str, Enum):
     CRITICAL = "Critical"
     HIGH = "High"
@@ -14,7 +15,7 @@ class Severity(str, Enum):
 
 class STATUS(str, Enum):
     OPEN = "Open"
-    RESOLVED = "Resolved"   
+    RESOLVED = "Resolved"
     CLOSED = "Closed"
     INPROGRESS = "In Progress"
 
@@ -33,7 +34,7 @@ class IssueIn(SharedIssue):
 
 class IssueOut(SharedIssue):
     id: UUID
-    equipment_id: UUID  
+    equipment_id: UUID
     status: STATUS
     reported_by: str
     reported_by_id: Optional[UUID] = None

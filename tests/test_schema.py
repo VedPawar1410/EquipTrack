@@ -4,8 +4,8 @@ import re
 
 import pytest
 from sqlalchemy import inspect, text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import SQLModel
 
 import app.models  # noqa: F401  (registers every table)

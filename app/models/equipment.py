@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from uuid import UUID, uuid4
 
 from sqlalchemy import Enum as SAEnum
@@ -8,10 +8,10 @@ from sqlmodel import Field, Relationship
 from app.schemas.equipment import STATUS, SharedEquipment
 
 if TYPE_CHECKING:
+    from app.models.document import DocumentTable
     from app.models.issue import IssueTable
     from app.models.maintenance import MaintenanceTable
     from app.models.part import PartTable
-    from app.models.document import DocumentTable
 
 
 class EquipmentTable(SharedEquipment, table=True):

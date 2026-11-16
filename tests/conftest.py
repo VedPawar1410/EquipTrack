@@ -28,8 +28,8 @@ import pytest  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # noqa: E402
-from testcontainers.core.network import Network  # noqa: E402
 from testcontainers.community.postgres import PostgresContainer  # noqa: E402
+from testcontainers.core.network import Network  # noqa: E402
 
 from app.core.database import get_db  # noqa: E402
 from app.main import app  # noqa: E402

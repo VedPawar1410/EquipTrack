@@ -25,7 +25,7 @@ async def get_current_user(
     try:
         user_id = auth_service.decode_access_token(token)
     except auth_service.InvalidToken:
-        raise unauthorized
+        raise unauthorized from None  # don't chain the JWT library's error into the response path
     user = await db.get(UserTable, user_id)
     if user is None or not user.is_active:
         raise unauthorized

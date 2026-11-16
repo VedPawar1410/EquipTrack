@@ -1,12 +1,11 @@
-from datetime import datetime
-from typing import List, TYPE_CHECKING, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import Enum as SAEnum
 from sqlmodel import Field, Relationship
 
 from app.models.equipment import EquipmentTable
-from app.schemas.document import DOCTYPE, DocumentShared
+from app.schemas.document import DocumentShared
+
 
 class DocumentTable(DocumentShared, table=True):
     __tablename__ = "documents"  # type: ignore
@@ -15,4 +14,4 @@ class DocumentTable(DocumentShared, table=True):
     uploaded_by: Optional[str] = Field(default=None, max_length=100)
 
     # Connects back to the parent table for ORM usage
-    equipment: Optional[EquipmentTable] = Relationship(back_populates="documents")  
+    equipment: Optional[EquipmentTable] = Relationship(back_populates="documents")

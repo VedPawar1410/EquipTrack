@@ -41,6 +41,6 @@ async def health(db: AsyncSession = Depends(get_db)):
     """Liveness + DB connectivity check, used by Docker/hosting platforms and uptime monitors."""
     try:
         await db.execute(text("SELECT 1"))
-    except Exception:
-        raise HTTPException(status_code=503, detail="database unavailable")
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="database unavailable") from exc
     return {"status": "ok", "database": "ok"}

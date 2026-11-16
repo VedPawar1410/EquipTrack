@@ -58,7 +58,7 @@ async def create_user(body: UserCreate, db: AsyncSession = Depends(get_db)):
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(status_code=409, detail="Username or email already exists")
+        raise HTTPException(status_code=409, detail="Username or email already exists") from None
     await db.refresh(user)
     return user
 
@@ -82,7 +82,8 @@ async def change_role(
 ):
     user = await _get_user_or_404(user_id, db)
     if user.id == admin.id:
-        raise HTTPException(status_code=422, detail="You cannot change your own role")  # avoids locking out the last admin
+        # Guard against an admin locking everyone out by demoting the last admin account.
+        raise HTTPException(status_code=422, detail="You cannot change your own role")
     user.role = body.role
     await db.commit()
     await db.refresh(user)

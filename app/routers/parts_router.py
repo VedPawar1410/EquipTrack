@@ -69,8 +69,8 @@ async def change_part_quantity(
     try:
         return await parts_service.adjust_stock(db, part_id, body.quantity_change, actor=user)
     except NotPermitted as exc:
-        raise HTTPException(status_code=403, detail=str(exc))
-    except parts_service.PartNotFound:
-        raise HTTPException(status_code=404, detail="Part not found")
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except parts_service.PartNotFound as exc:
+        raise HTTPException(status_code=404, detail="Part not found") from exc
     except parts_service.InsufficientStock as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

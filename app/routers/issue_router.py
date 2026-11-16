@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.core.database import get_db
-from app.models.equipment import EquipmentTable
 from app.dependencies import get_current_user, require_role
+from app.models.equipment import EquipmentTable
 from app.models.issue import IssueTable
 from app.models.user import UserTable
 from app.schemas.common import utc_now
@@ -90,9 +90,9 @@ async def change_issue_status(
     try:
         issue_service.change_status(issue, body.status, actor=user)
     except issue_service.InvalidTransition as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except NotPermitted as exc:
-        raise HTTPException(status_code=403, detail=str(exc))
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     await db.commit()
     await db.refresh(issue)
     return issue

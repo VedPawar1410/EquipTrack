@@ -7,6 +7,7 @@ from sqlmodel import Field, SQLModel
 
 from app.schemas.common import UTCDatetime
 
+
 class LogType(str, Enum):
     # Planned / preventive
     SCHEDULED = "Scheduled"
@@ -15,18 +16,18 @@ class LogType(str, Enum):
     INSTALLATION = "Installation"
     SOFTWARE_UPDATE = "Software Update"
     SAFETY_AUDIT = "Safety Audit"
- 
+
     # Reactive / unplanned
     EMERGENCY = "Emergency"
     CORRECTIVE = "Corrective"
     WARRANTY_REPAIR = "Warranty Repair"
- 
+
     # Condition-based
     PREDICTIVE = "Predictive"
- 
+
     # Routine check
     INSPECTION = "Inspection"
- 
+
     # Major / lifecycle events
     OVERHAUL = "Overhaul"
     RETROFIT = "Retrofit"

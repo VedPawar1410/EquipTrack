@@ -17,7 +17,8 @@ class IssueTable(SharedIssue, table=True):
     equipment_id: UUID = Field(foreign_key="equipment.id")
     status: STATUS = Field(
         default=STATUS.OPEN,
-        sa_type=SAEnum(STATUS, native_enum=False, create_type=False, values_callable=lambda enum_cls: [e.value for e in enum_cls])  # type: ignore
+        sa_type=SAEnum(STATUS, native_enum=False, create_type=False,
+                       values_callable=lambda enum_cls: [e.value for e in enum_cls])  # type: ignore
     )
     # Display names (kept for history) + real user references added in v1.3.
     reported_by: str = Field(max_length=100)

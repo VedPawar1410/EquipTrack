@@ -34,7 +34,9 @@ def change_status(issue: IssueTable, new_status: STATUS, actor: UserTable) -> Is
     if min_role is None:
         raise InvalidTransition(f"Cannot transition from '{current.value}' to '{new_status.value}'")
     if not has_role(actor.role, min_role):
-        raise NotPermitted(f"Only a {min_role.value} or above can move an issue from '{current.value}' to '{new_status.value}'")
+        raise NotPermitted(
+            f"Only a {min_role.value} or above can move an issue from '{current.value}' to '{new_status.value}'"
+        )
 
     now = utc_now()
     issue.status = new_status

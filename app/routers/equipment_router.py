@@ -1,5 +1,4 @@
 from typing import List, Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.exc import IntegrityError
@@ -25,7 +24,9 @@ async def _commit_or_409(db: AsyncSession, serial_number: str) -> None:
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(status_code=409, detail=f"Equipment with serial_number '{serial_number}' already exists")
+        raise HTTPException(
+            status_code=409, detail=f"Equipment with serial_number '{serial_number}' already exists"
+        ) from None
 
 
 @router.post("", response_model=EquipmentOut, status_code=201, dependencies=admin)

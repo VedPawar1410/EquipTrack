@@ -1,11 +1,9 @@
-from sqlmodel import SQLModel
-from datetime import date, datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import Field
+from datetime import datetime, timezone
 from enum import Enum
+from uuid import UUID
+
 from sqlalchemy import Enum as SAEnum
-from typing import List, Optional
-from sqlmodel import Relationship
+from sqlmodel import Field, SQLModel
 
 
 class DOCTYPE(str, Enum):
@@ -13,19 +11,19 @@ class DOCTYPE(str, Enum):
     SERVICE_MANUAL = "Service Manual"
     SOP = "SOP"
     INSTALLATION_GUIDE = "Installation Guide"
- 
+
     # Safety & compliance
     SAFETY_GUIDE = "Safety Guide"
     MSDS = "MSDS"
     LOCKOUT_TAGOUT = "Lockout/Tagout Procedure"
- 
+
     # Technical reference
     DATASHEET = "Datasheet"
     WIRING_DIAGRAM = "Wiring Diagram"
     PARTS_CATALOG = "Parts Catalog"
     ERROR_CODE_REFERENCE = "Error Code Reference"
     TROUBLESHOOTING_GUIDE = "Troubleshooting Guide"
- 
+
     # Certificates & checklists
     CALIBRATION_CERTIFICATE = "Calibration Certificate"
     INSPECTION_CHECKLIST = "Inspection Checklist"
@@ -51,4 +49,4 @@ class DocumentIn(DocumentShared):
 class DocumentOut(DocumentShared):
     id: UUID
     equipment_id: UUID | None = None
-    uploaded_by: str | None = None          
+    uploaded_by: str | None = None

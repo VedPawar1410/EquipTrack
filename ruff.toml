@@ -1,0 +1,12 @@
+# Lint for likely bugs, not style churn.
+line-length = 120
+target-version = "py312"
+
+[lint]
+select = ["E", "W", "F", "I", "B"]   # pycodestyle, pyflakes, import order, bugbear
+ignore = [
+    "B008",  # Depends(...) in argument defaults IS FastAPI's dependency-injection pattern
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["E501"]   # long, readable request payloads in tests are fine
