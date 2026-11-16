@@ -47,6 +47,9 @@ services:
       # (Colima, Docker Desktop on Windows), so poll for edits instead.
       WATCHFILES_FORCE_POLLING: "true"
       JWT_SECRET_KEY: local-dev-only-secret-change-me-0123456789
+      # Read from your local .env (git-ignored). Empty = no LLM: the API answers with manual excerpts.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:

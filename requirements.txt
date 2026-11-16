@@ -12,3 +12,6 @@ python-multipart==0.0.33      # form parsing: OAuth2 login form and document upl
 pgvector==0.5.1               # SQLAlchemy type for the vector(384) column
 pypdf==7.1.0                  # text extraction from uploaded PDF manuals
 fastembed==0.9.1              # local CPU embeddings (ONNX), no API key or quota
+langchain-core==1.8.1         # chat-model interface + .with_fallbacks() (LLM layer only)
+langchain-groq==1.2.0         # primary LLM (free tier)
+langchain-google-genai==4.5.0 # fallback LLM (free tier)

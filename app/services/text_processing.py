@@ -56,13 +56,23 @@ def normalize_code(token: str) -> str:
     return re.sub(r"[-_./\s]", "", token).upper()
 
 
+def _is_code(normalized: str) -> bool:
+    has_digit, has_letter = any(c.isdigit() for c in normalized), any(c.isalpha() for c in normalized)
+    return (has_digit and has_letter) or (normalized.isdigit() and 3 <= len(normalized) <= 6)
+
+
+def without_codes(text: str) -> str:
+    """The words of a query with its codes removed: codes have their own exact-match channel, and
+    Postgres full-text would split them into noise like 'e' and '-47'."""
+    return _CODE_TOKEN.sub(lambda m: " " if _is_code(normalize_code(m.group())) else m.group(), text)
+
+
 def extract_codes(text: str) -> list[str]:
     """Used at BOTH index time and query time: one function, so the two sides can never disagree."""
     codes = set()
     for token in _CODE_TOKEN.findall(text):
         normalized = normalize_code(token)
-        has_digit, has_letter = any(c.isdigit() for c in normalized), any(c.isalpha() for c in normalized)
-        if (has_digit and has_letter) or (normalized.isdigit() and 3 <= len(normalized) <= 6):
+        if _is_code(normalized):
             codes.add(normalized)
     return sorted(codes)
 

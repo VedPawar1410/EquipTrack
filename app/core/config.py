@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +24,23 @@ class Settings(BaseSettings):
     embedding_provider: Literal["fastembed", "hashing"] = "fastembed"
     embedding_model: str = "BAAI/bge-small-en-v1.5"   # 384 dimensions, English
     fastembed_cache_dir: str | None = None              # the Docker image bakes the model in here
+
+    # Retrieval
+    rag_top_k: int = 5                 # chunks given to the LLM
+    rag_min_similarity: float = 0.55   # below this, a chunk with no exact code match is "not relevant"
+
+    # LLMs: free tiers, tried in order; with none available the API answers with manual excerpts.
+    llm_order: str = "groq,gemini"
+    groq_api_key: SecretStr | None = None
+    groq_model: str = "openai/gpt-oss-120b"       # pinned, never a "-latest" alias
+    gemini_api_key: SecretStr | None = None
+    gemini_model: str = "gemini-3.5-flash-lite"
+    llm_timeout_seconds: float = 30
+
+    @field_validator("groq_api_key", "gemini_api_key", mode="before")
+    @classmethod
+    def blank_key_means_none(cls, value):
+        return value or None
 
 
 settings = Settings()

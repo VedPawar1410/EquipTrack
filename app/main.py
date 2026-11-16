@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.routers.ai_router import router as ai_router
 from app.routers.analytics_router import router as analytics_router
 from app.routers.auth_router import router as auth_router
 from app.routers.documents_router import router as documents_router
@@ -26,6 +27,7 @@ app.include_router(issue_router, prefix="/api/v1")
 app.include_router(part_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
+app.include_router(ai_router, prefix="/api/v1")
 
 
 @app.exception_handler(IntegrityError)

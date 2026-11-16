@@ -17,6 +17,9 @@ import pathlib
 os.environ.setdefault("JWT_SECRET_KEY", "test-only-secret-key-for-the-pytest-suite-0123")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://unused:unused@localhost:1/unused")  # replaced via get_db override
 os.environ.setdefault("EMBEDDING_PROVIDER", "hashing")  # deterministic fake: no model download in CI
+# Force-blank the LLM keys (env vars beat a developer's .env): the suite must never call a real LLM.
+os.environ["GROQ_API_KEY"] = ""
+os.environ["GEMINI_API_KEY"] = ""
 
 # Colima keeps its Docker socket in the home directory; point the Docker SDK at it if present.
 _colima_socket = pathlib.Path.home() / ".colima" / "default" / "docker.sock"
@@ -37,6 +40,7 @@ from app.main import app  # noqa: E402
 from app.models.user import UserTable  # noqa: E402
 from app.schemas.user import Role  # noqa: E402
 from app.services.auth_service import create_access_token, hash_password  # noqa: E402
+from app.services.llm import get_chat_model  # noqa: E402
 
 MIGRATIONS_DIR = pathlib.Path(__file__).resolve().parent.parent / "migrations"
 LIQUIBASE_IMAGE = "liquibase/liquibase:4.29"
@@ -93,6 +97,7 @@ def _use_test_database(session_maker):
 
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_session_maker] = lambda: session_maker  # background indexing uses the test DB too
+    app.dependency_overrides[get_chat_model] = lambda: None  # no LLM unless a test injects a fake
     yield
     app.dependency_overrides.clear()
 
