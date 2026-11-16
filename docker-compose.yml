@@ -4,7 +4,7 @@
 #   postgres must pass its healthcheck -> liquibase runs `update` and exits 0 -> app starts.
 services:
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16   # official Postgres 16 + the pgvector extension
     environment:
       POSTGRES_USER: equiptrack
       POSTGRES_PASSWORD: devpassword   # local dev only; real secrets come from the host in prod

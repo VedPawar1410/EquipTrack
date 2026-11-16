@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  v1.5: document storage and retrieval for the AI assistant (RAG).
+  - pgvector lives INSIDE this Postgres: embeddings are just another column, managed by Liquibase.
+  - document_files keeps the uploaded bytes apart from documents, so listing documents never
+    loads file contents (and free hosts' disks are wiped on restart, so the DB is the store).
+  - document_chunks has three search channels, merged at query time:
+      embedding   vector(384)  meaning      (HNSW, cosine)
+      content_tsv tsvector     words        (GIN, English stemming)
+      codes       text[]       exact codes  (GIN; "E-47" stored normalised as "E47")
+  Everything is additive: new extension, new tables, new nullable columns.
+-->
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd"
+    logicalFilePath="changesets/v1.5-documents-rag.xml">
+
+    <changeSet id="1.5.1-enable-pgvector" author="ved">
+        <sql>CREATE EXTENSION IF NOT EXISTS vector;</sql>
+        <rollback><sql>DROP EXTENSION IF EXISTS vector;</sql></rollback>
+    </changeSet>
+
+    <changeSet id="1.5.2-documents-indexing-columns" author="ved">
+        <comment>Who uploaded it (real user reference, like v1.3), its MIME type, and why indexing failed if it did.</comment>
+        <addColumn tableName="documents">
+            <column name="uploaded_by_id" type="UUID"/>
+            <column name="content_type" type="VARCHAR(100)"/>
+            <column name="index_error" type="TEXT"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="documents" baseColumnNames="uploaded_by_id"
+                                 constraintName="fk_documents_uploaded_by_id"
+                                 referencedTableName="users" referencedColumnNames="id" onDelete="SET NULL"/>
+        <rollback>
+            <dropColumn tableName="documents" columnName="index_error"/>
+            <dropColumn tableName="documents" columnName="content_type"/>
+            <dropColumn tableName="documents" columnName="uploaded_by_id"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="1.5.3-create-document-files" author="ved">
+        <createTable tableName="document_files">
+            <column name="document_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"
+                             foreignKeyName="fk_document_files_document_id"
+                             referencedTableName="documents" referencedColumnNames="id" deleteCascade="true"/>
+            </column>
+            <column name="content" type="BYTEA">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback><dropTable tableName="document_files"/></rollback>
+    </changeSet>
+
+    <changeSet id="1.5.4-create-document-chunks" author="ved">
+        <comment>Raw SQL because Liquibase has no built-in vector or generated-column types.</comment>
+        <sql>
+            CREATE TABLE document_chunks (
+                id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                document_id  UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+                equipment_id UUID REFERENCES equipment(id) ON DELETE SET NULL,  -- copied from the document, for filtering
+                chunk_index  INT  NOT NULL,
+                page         INT,                                               -- 1-based PDF page, NULL for text files
+                content      TEXT NOT NULL,
+                codes        TEXT[] NOT NULL DEFAULT '{}',
+                embedding    vector(384) NOT NULL,
+                content_tsv  tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED,
+                CONSTRAINT document_chunks_unique_position UNIQUE (document_id, chunk_index)
+            );
+            CREATE INDEX idx_chunks_embedding_hnsw ON document_chunks USING hnsw (embedding vector_cosine_ops);
+            CREATE INDEX idx_chunks_content_tsv ON document_chunks USING gin (content_tsv);
+            CREATE INDEX idx_chunks_codes ON document_chunks USING gin (codes);
+            CREATE INDEX idx_chunks_equipment_id ON document_chunks (equipment_id);
+        </sql>
+        <rollback><sql>DROP TABLE document_chunks;</sql></rollback>
+    </changeSet>
+
+</databaseChangeLog>

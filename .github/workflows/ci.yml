@@ -36,7 +36,7 @@ jobs:
           cache-dependency-path: requirements*.txt
       - run: pip install -r requirements-dev.txt
       - name: Pre-pull test images
-        run: docker pull -q postgres:16 && docker pull -q liquibase/liquibase:4.29
+        run: docker pull -q pgvector/pgvector:pg16 && docker pull -q liquibase/liquibase:4.29
       - name: Run tests (fails below 95% coverage)
         run: pytest --cov --cov-report=term --cov-fail-under=95
 

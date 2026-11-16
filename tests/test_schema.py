@@ -16,6 +16,8 @@ MIGRATIONS = pathlib.Path(__file__).resolve().parent.parent / "migrations"
 
 def _family(sql_type: str) -> str:
     s = sql_type.upper()
+    if s.endswith("[]") or s.startswith("ARRAY"):   # TEXT[] (model) and ARRAY (reflected) are the same
+        return "array"
     for key, fam in [("UUID", "uuid"), ("TIMESTAMP", "timestamp"), ("DATETIME", "timestamp"), ("DATE", "date"),
                      ("BOOL", "bool"), ("INT", "int"), ("NUMERIC", "number"), ("FLOAT", "number"),
                      ("DOUBLE", "number"), ("CHAR", "string"), ("TEXT", "string")]:

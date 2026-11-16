@@ -1,4 +1,4 @@
-from app.models.document import DocumentTable
+from app.models.document import DocumentChunkTable, DocumentFileTable, DocumentTable
 from app.models.equipment import EquipmentTable
 from app.models.issue import IssueTable
 from app.models.maintenance import MaintenanceTable
@@ -11,5 +11,7 @@ __all__ = [
     "MaintenanceTable",
     "PartTable",
     "DocumentTable",
+    "DocumentFileTable",
+    "DocumentChunkTable",
     "UserTable",
 ]

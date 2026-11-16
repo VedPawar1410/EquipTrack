@@ -43,10 +43,11 @@ class DocumentShared(SQLModel):
     is_indexed: bool = False
     uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class DocumentIn(DocumentShared):
-    equipment_id: UUID | None = None  # None = general document (e.g. a plant-wide safety guide)
-
 class DocumentOut(DocumentShared):
     id: UUID
-    equipment_id: UUID | None = None
+    equipment_id: UUID | None = None   # None = general document (e.g. a plant-wide safety guide)
     uploaded_by: str | None = None
+    uploaded_by_id: UUID | None = None
+    content_type: str | None = None
+    index_error: str | None = None     # why indexing failed (e.g. a scanned PDF)
+

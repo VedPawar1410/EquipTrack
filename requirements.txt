@@ -8,4 +8,7 @@ pydantic==2.14.3
 pydantic-settings==2.16.3
 pwdlib[argon2]==0.4.2         # Argon2id password hashing
 pyjwt==2.15.1                 # JWT access tokens
-python-multipart==0.0.33      # form parsing for the OAuth2 login form
+python-multipart==0.0.33      # form parsing: OAuth2 login form and document uploads
+pgvector==0.5.1               # SQLAlchemy type for the vector(384) column
+pypdf==7.1.0                  # text extraction from uploaded PDF manuals
+fastembed==0.9.1              # local CPU embeddings (ONNX), no API key or quota

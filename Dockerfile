@@ -10,10 +10,17 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Bake the embedding model into the image so the first upload doesn't wait on a ~70 MB download
+# (and the container never needs internet access to Hugging Face at runtime).
+ARG EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+ENV EMBEDDING_MODEL=${EMBEDDING_MODEL} \
+    FASTEMBED_CACHE_DIR=/app/.cache/fastembed
+RUN python -c "import os; from fastembed import TextEmbedding; TextEmbedding(os.environ['EMBEDDING_MODEL'], cache_dir=os.environ['FASTEMBED_CACHE_DIR'])"
+
 COPY app ./app
 
 # Run as an unprivileged user, not root
-RUN useradd --create-home appuser
+RUN useradd --create-home appuser && chown -R appuser /app/.cache
 USER appuser
 
 EXPOSE 8000

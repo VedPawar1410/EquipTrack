@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -15,6 +17,13 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(min_length=32)
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+
+    # Documents / RAG
+    max_upload_mb: int = 10
+    # "fastembed" = real local model (CPU, ONNX). "hashing" = deterministic fake used by the tests.
+    embedding_provider: Literal["fastembed", "hashing"] = "fastembed"
+    embedding_model: str = "BAAI/bge-small-en-v1.5"   # 384 dimensions, English
+    fastembed_cache_dir: str | None = None              # the Docker image bakes the model in here
 
 
 settings = Settings()

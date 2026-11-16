@@ -312,5 +312,6 @@
     <include file="changesets/v1.2-add-indexes.xml" relativeToChangelogFile="true"/>
     <include file="changesets/v1.3-create-users.xml" relativeToChangelogFile="true"/>
     <include file="changesets/v1.4-maintenance-latest-index.xml" relativeToChangelogFile="true"/>
+    <include file="changesets/v1.5-documents-rag.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

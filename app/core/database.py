@@ -14,6 +14,12 @@ engine = create_async_engine(
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
+def get_session_maker() -> async_sessionmaker:
+    """For work that outlives the request (background indexing) and needs its own session.
+    A dependency, so tests can point it at the test database."""
+    return async_session_maker
+
+
 async def get_db():
     """FastAPI dependency: one session per request, closed automatically afterwards."""
     async with async_session_maker() as session:
